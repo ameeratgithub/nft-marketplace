@@ -10,7 +10,7 @@ const MintingPaper = styled(Paper)({
     width: '50%'
 })
 
-export default () => {
+export default ({}) => {
     const [name, setName] = useState('')
     const [nameErr, setNameErr] = useState(false)
     

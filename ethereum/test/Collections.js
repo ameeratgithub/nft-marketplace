@@ -7,7 +7,7 @@ const _e = (amount) => {
     return ethers.utils.parseEther(amount.toString())
 }
 
-describe.only("Collections", () => {
+xdescribe("Collections", () => {
     let collections, signer, signer2, signer3, tapp
 
     beforeEach(async () => {

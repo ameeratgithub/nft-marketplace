@@ -7,7 +7,7 @@ import MintingForm from "../components/MintingForm"
 
 export default ({ jsonUrls }) => {
     const [json, setJson] = useState([])
-    const [openMintingModal, setOpenMintingModal] = useState(true)
+    const [openMintingModal, setOpenMintingModal] = useState(false)
     const [estimatePrice, setEstimatePrice] = useState('')
 
     useEffect(() => {
@@ -23,7 +23,9 @@ export default ({ jsonUrls }) => {
 
     return <Layout>
         <Modal open={openMintingModal} onClose={() => setOpenMintingModal(false)}>
-            <MintingForm></MintingForm>
+            <div>
+                <MintingForm />
+            </div>
         </Modal>
         <Stack>
             <Grid container direction="row" justifyContent="space-between" sx={{ mt: '20px' }}>
@@ -32,7 +34,7 @@ export default ({ jsonUrls }) => {
                     onClick={e => setOpenMintingModal(true)}>Mint Custom NFT</Button>
             </Grid>
             <Grid container spacing={12} sx={{ mt: '1px', mb: '40px' }}>
-                {json.map(j => <Grid item xs={12} md={12} lg={6} xl={6} key={j.name}>
+                {json.map(j => <Grid item xs={12} md={4} lg={3} xl={3} key={j.name}>
                     <NFTItem nft={j} ></NFTItem>
                 </Grid>)}
             </Grid>
