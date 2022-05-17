@@ -14,8 +14,8 @@ contract ERC721le is ERC721e, IERC721le {
 
     modifier validLazyToken(uint256 _id) {
         require(
-            _id > 0 && _id < lazyTokenCount,
-            "ERC721el: Invalid Lazy tokenId"
+            _id > 0 && _id <= lazyTokenCount,
+            "ERC721le: Invalid Lazy tokenId"
         );
         _;
     }
@@ -49,13 +49,13 @@ contract ERC721le is ERC721e, IERC721le {
         uint256 tokenId = mint(_uri);
         require(tokenId > 0, "ERC721le: Minting failed");
         lazyToken.minted = true;
-        _tokens[tokenId].creator = msg.sender;
+        _tokens[tokenId].creator = lazyToken.creator;
     }
 
     function getAllLazyTokens() public view returns (LazyNFT[] memory) {
         LazyNFT[] memory tokens = new LazyNFT[](lazyTokenCount);
         for (uint256 i; i < lazyTokenCount; i++) {
-            tokens[i] = lazyTokens[i];
+            tokens[i] = lazyTokens[i+1];
         }
 
         return tokens;

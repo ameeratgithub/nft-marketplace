@@ -123,6 +123,81 @@ describe.only("Monuments", () => {
         })
     })
     describe("Lazy Minting", () => {
+        it('should add lazy token', async () => {
 
+            const tx1 = await monuments.addLazyToken("uri1", _e(1))
+            const tx2 = await monuments.connect(signer2).addLazyToken("uri2", _e(2))
+
+            await tx1.wait(1)
+            await tx2.wait(1)
+
+            const lazyTokens = await monuments.getAllLazyTokens()
+
+            expect(lazyTokens[0].id.toString()).to.equal("1")
+            expect(lazyTokens[0].uri).to.equal("uri1")
+            expect(lazyTokens[0].creator).to.equal(signer.address)
+            expect(lazyTokens[0].price.toString()).to.equal(_e(1))
+            expect(lazyTokens[0].minted).to.be.false
+
+            expect(lazyTokens[1].id.toString()).to.equal("2")
+            expect(lazyTokens[1].uri).to.equal("uri2")
+            expect(lazyTokens[1].creator).to.equal(signer2.address)
+            expect(lazyTokens[1].price.toString()).to.equal(_e(2))
+            expect(lazyTokens[1].minted).to.be.false
+
+        })
+        it('should add batch lazy tokens', async () => {
+
+            const tx1 = await monuments.addLazyTokens(["uri1", "uri2"], [_e(1), _e(2)])
+
+            await tx1.wait(1)
+
+            const lazyTokens = await monuments.getAllLazyTokens()
+
+            expect(lazyTokens[0].id.toString()).to.equal("1")
+            expect(lazyTokens[0].uri).to.equal("uri1")
+            expect(lazyTokens[0].creator).to.equal(signer.address)
+            expect(lazyTokens[0].price.toString()).to.equal(_e(1))
+            expect(lazyTokens[0].minted).to.be.false
+
+            expect(lazyTokens[1].id.toString()).to.equal("2")
+            expect(lazyTokens[1].uri).to.equal("uri2")
+            expect(lazyTokens[1].creator).to.equal(signer.address)
+            expect(lazyTokens[1].price.toString()).to.equal(_e(2))
+            expect(lazyTokens[1].minted).to.be.false
+
+        })
+        it('should mint lazy token', async () => {
+
+            const tx1 = await monuments.addLazyTokens(["uri1", "uri2"], [_e(1), _e(2)])
+
+            await tx1.wait(1)
+
+
+
+            let lazyTokens = await monuments.getAllLazyTokens()
+
+            const mintPromises = lazyTokens.map((lazyToken) => {
+                return monuments.connect(signer2).mintLazyToken(lazyToken.id, lazyToken.uri)
+            })
+
+            const txs = (await Promise.all(mintPromises)).map(tx=>tx.wait(1))
+
+            await Promise.all(txs)
+
+            lazyTokens = await monuments.getAllLazyTokens()
+
+            expect(lazyTokens[0].minted).to.be.true
+            expect(lazyTokens[1].minted).to.be.true
+
+            const tokens = await monuments.getTokensList()
+
+            expect(tokens[0].creator).to.equal(signer.address)
+            expect(tokens[0].owner).to.equal(signer2.address)
+
+            expect(tokens[1].creator).to.equal(signer.address)
+            expect(tokens[1].owner).to.equal(signer2.address)
+
+        })
     })
 })

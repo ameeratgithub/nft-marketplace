@@ -58,6 +58,15 @@ contract ERC721e is ERC721, IERC721Receiver, IERC721e {
         return tokenCount;
     }
 
+    function getTokensList() public view returns (NFT[] memory) {
+        NFT[] memory tokens = new NFT[](tokenCount);
+        for (uint256 i; i < tokenCount; i++) {
+            tokens[i] = _tokens[i+1];
+        }
+
+        return tokens;
+    }
+
     function internalTransferTo(address _to, uint256 _tokenId)
         external
         onlyOwner
