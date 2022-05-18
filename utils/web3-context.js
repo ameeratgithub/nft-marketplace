@@ -56,11 +56,9 @@ const initializeWeb3Modal = () => {
 }
 
 function switchNetwork() {
-    console.log("Switching Network")
     const provider = window.ethereum
     if (provider) {
         const chainId = ethers.utils.hexlify(getDesiredChainId())
-        console.log("Hex chain Id", chainId)
         try {
             provider.request({
                 method: 'wallet_switchEthereumChain',

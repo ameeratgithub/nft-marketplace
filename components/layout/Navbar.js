@@ -14,7 +14,7 @@ import { useState } from 'react';
 import NLink from 'next/link';
 import { Link } from '@mui/material'
 
-const pages = ['Faucet', 'NFTs'];
+const pages = ['Faucet', 'Collections'];
 // const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
 
 const ResponsiveAppBar = () => {

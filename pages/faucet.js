@@ -7,7 +7,7 @@ import Layout from "../components/layout"
 import { _e, _w } from "../utils/ethers"
 import { useWeb3 } from "../utils/web3-context"
 
-export default ({ tappAddress }) => {
+export default ({}) => {
     const [balance, setBalance] = useState(0)
     const [limit, setLimit] = useState(0)
     const [amount, setAmount] = useState('')
@@ -21,8 +21,8 @@ export default ({ tappAddress }) => {
 
     const loadBalance = async () => {
         const [_b, _l] = await Promise.all([
-            getUserBalance(address, signer, tappAddress),
-            getLimit(signer, tappAddress)
+            getUserBalance(address,signer),
+            getLimit(signer)
         ])
 
         setBalance(_e(_b))
@@ -33,7 +33,7 @@ export default ({ tappAddress }) => {
         if (Number(amount) > limit || Number(amount) <= 0) return
         setLoading(true)
         try {
-            const tx = await mint(_w(amount), signer, tappAddress)
+            const tx = await mint(_w(amount),signer)
             await tx.wait(1)
         } catch (err) { }
         setLoading(false)
@@ -47,9 +47,9 @@ export default ({ tappAddress }) => {
                 <Chip label={` ${balance} Tapps `} sx={{ mb: '10px', fontSize: '15px', fontWeight: 'bold' }} />
                 <Divider sx={{ mt: '10px', mb: '20px' }} />
                 <Typography variant="p" sx={{ mb: '20px' }} >You can mint {limit} more tapps</Typography>
-                <Link href={`/nfts`} passHref>
+                <Link href={`/collections`} passHref>
                     <Button variant="contained" sx={{width:'100%', mt:'33px'}} color="success">
-                        Explore NFTs
+                        Explore Collections
                     </Button>
                 </Link>
             </Container>
@@ -81,7 +81,6 @@ export default ({ tappAddress }) => {
 export async function getServerSideProps() {
     return {
         props: {
-            tappAddress: process.env.LOCAL_TAPP
         }
     }
 }

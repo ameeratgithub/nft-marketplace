@@ -31,7 +31,9 @@ export default ({ jsonUrls }) => {
             <Grid container direction="row" justifyContent="space-between" sx={{ mt: '20px' }}>
                 <Typography variant="h5">Monument Valley Collection</Typography>
                 <Button variant="contained" color="success"
-                    onClick={e => setOpenMintingModal(true)}>Mint Custom NFT</Button>
+                    onClick={e => setOpenMintingModal(true)}>
+                    Mint Custom NFT
+                </Button>
             </Grid>
             <Grid container spacing={12} sx={{ mt: '1px', mb: '40px' }}>
                 {json.map(j => <Grid item xs={12} md={4} lg={3} xl={3} key={j.name}>

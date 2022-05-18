@@ -3,6 +3,10 @@ const hre = require("hardhat");
 
 let tapp, monuments, collections
 
+const _e = (amount) => {
+    return ethers.utils.parseEther(amount.toString())
+}
+
 async function deployTapp() {
 
     const Tapp = await hre.ethers.getContractFactory("Tapp");
@@ -28,30 +32,45 @@ async function deployCollections() {
 }
 
 async function addMonumentsToCollection() {
-    await collections.addCollection(tapp.address)
+    
+    await collections.addCollection(monuments.address)
 
     const banner = 'https://bafybeiavbtndduyxg3sd6nd3wpgnkn5tr2ot2modlajmruhto6adm7qtcu.ipfs.dweb.link/images/6.jpg'
+    const description = 'An illusory adventure of impossible architecture and forgiveness'
 
     await collections.updateCollectionBanner(1, banner)
+    await collections.updateCollectionDescription(1, description)
+    const _collections = await collections.getAllCollections()
+    console.log(_collections[0].collectionAddress)
+    await addMintableItems()
+    console.log(`Adding ${monuments.address} to ${collections.address}`)
 }
 
 async function addMintableItems() {
     const uris = []
+    const prices = []
 
-    const baseUri = ''
+    const baseUri = 'https://bafybeicorp7kgx2katk6fjkb2wvoavhwymzkfdjj5qj2iv7g5bvespyqmq.ipfs.dweb.link/web.storage%20json/'
 
-    await monuments.addLazyTokens(uris)
+    for (let i = 1; i <= 16; i++) {
+        uris.push(`${baseUri + i}.json`)
+        prices.push(_e(50 * i))
+    }
 
-    // const banner = 'https://bafybeiavbtndduyxg3sd6nd3wpgnkn5tr2ot2modlajmruhto6adm7qtcu.ipfs.dweb.link/images/6.jpg'
-
-    await collections.updateCollectionBanner(1, banner)
+    await monuments.addLazyTokens(uris, prices)
 }
 
 async function main() {
     await deployTapp()
+    
     await deployMonuments()
+    
     await deployCollections()
+
     await addMonumentsToCollection()
+
+    
+
 }
 
 main()

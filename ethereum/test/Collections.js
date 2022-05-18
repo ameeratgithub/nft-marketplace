@@ -1,13 +1,13 @@
 const { ethers } = require('hardhat')
 const { expect } = require('chai').use(require('chai-as-promised'))
 
-const ERC721e = require('../artifacts/contracts/standards/ERC721e.sol/ERC721e.json')
+const ERC721le = require('../artifacts/contracts/standards/ERC721le.sol/ERC721le.json')
 
 const _e = (amount) => {
     return ethers.utils.parseEther(amount.toString())
 }
 
-xdescribe("Collections", () => {
+describe.only("Collections", () => {
     let collections, signer, signer2, signer3, tapp
 
     beforeEach(async () => {
@@ -33,9 +33,9 @@ xdescribe("Collections", () => {
 
     describe("Success", () => {
         it('creates a collection', async () => {
-            const tx1 = await collections.createCollection("collection name", "collection symbol", "banner uri", 0)
-            const tx2 = await collections.createCollection("collection name1", "collection symbol1", "banner uri", 0)
-            const tx3 = await collections.createCollection("collection name1", "collection symbol1", "banner uri", 0)
+            const tx1 = await collections.createCollection("collection name", "collection symbol", "banner uri", "description", 0)
+            const tx2 = await collections.createCollection("collection name1", "collection symbol1", "banner uri", "description", 0)
+            const tx3 = await collections.createCollection("collection name1", "collection symbol1", "banner uri", "description", 0)
 
             await tx1.wait(1)
             await tx2.wait(1)
@@ -52,9 +52,9 @@ xdescribe("Collections", () => {
             expect(address1 != address2 && address2 != address3 && address1 != address3).to.be.true
         })
         it('gets right collection owner', async () => {
-            const tx1 = await collections.createCollection("collection name", "collection symbol", "banner uri", 0)
-            const tx2 = await collections.connect(signer2).createCollection("collection name1", "collection symbol1", "banner uri", 0)
-            const tx3 = await collections.connect(signer3).createCollection("collection name1", "collection symbol1", "banner uri", 0)
+            const tx1 = await collections.createCollection("collection name", "collection symbol", "banner uri", "description",0)
+            const tx2 = await collections.connect(signer2).createCollection("collection name1", "collection symbol1", "banner uri","description", 0)
+            const tx3 = await collections.connect(signer3).createCollection("collection name1", "collection symbol1", "banner uri","description", 0)
 
             await tx1.wait(1)
             await tx2.wait(1)
@@ -70,9 +70,9 @@ xdescribe("Collections", () => {
 
         })
         it('gets the properties of contract', async () => {
-            const tx1 = await collections.createCollection("collection name", "collection symbol", "banner uri", 0)
-            const tx2 = await collections.connect(signer2).createCollection("collection name1", "collection symbol1", "banner uri", 0)
-            const tx3 = await collections.connect(signer3).createCollection("collection name2", "collection symbol2", "banner uri", 0)
+            const tx1 = await collections.createCollection("collection name", "collection symbol", "banner uri","description", 0)
+            const tx2 = await collections.connect(signer2).createCollection("collection name1", "collection symbol1", "banner uri","description", 0)
+            const tx3 = await collections.connect(signer3).createCollection("collection name2", "collection symbol2", "banner uri","description", 0)
 
             await tx1.wait(1)
             await tx2.wait(1)
@@ -82,9 +82,9 @@ xdescribe("Collections", () => {
             const collection2 = await collections.getCollection(2)
             const collection3 = await collections.getCollection(3)
 
-            const c1 = new ethers.Contract(collection1.collectionAddress, ERC721e.abi, signer)
-            const c2 = new ethers.Contract(collection2.collectionAddress, ERC721e.abi, signer)
-            const c3 = new ethers.Contract(collection3.collectionAddress, ERC721e.abi, signer)
+            const c1 = new ethers.Contract(collection1.collectionAddress, ERC721le.abi, signer)
+            const c2 = new ethers.Contract(collection2.collectionAddress, ERC721le.abi, signer)
+            const c3 = new ethers.Contract(collection3.collectionAddress, ERC721le.abi, signer)
 
             const c1Name = await c1.name()
             const c1Symbol = await c1.symbol()
@@ -106,9 +106,9 @@ xdescribe("Collections", () => {
             expect(c3Symbol).to.equal('collection symbol2')
         })
         it('gets the list of collections by user', async () => {
-            const tx1 = await collections.connect(signer2).createCollection("collection name", "collection symbol", "banner uri", 0)
-            const tx2 = await collections.connect(signer3).createCollection("collection name1", "collection symbol1", "banner uri", 0)
-            const tx3 = await collections.createCollection("collection name2", "collection symbol2", "banner uri", 0)
+            const tx1 = await collections.connect(signer2).createCollection("collection name", "collection symbol", "banner uri", "description",0)
+            const tx2 = await collections.connect(signer3).createCollection("collection name1", "collection symbol1", "banner uri","description", 0)
+            const tx3 = await collections.createCollection("collection name2", "collection symbol2", "banner uri","description", 0)
 
             await tx1.wait(1)
             await tx2.wait(1)
@@ -129,9 +129,9 @@ xdescribe("Collections", () => {
         })
         it('gets right contract owner', async () => {
             const [tx1, tx2, tx3] = await Promise.all([
-                collections.createCollection("collection name", "collection symbol", "banner uri", 0),
-                collections.connect(signer2).createCollection("collection name1", "collection symbol1", "banner uri", 0),
-                collections.connect(signer3).createCollection("collection name1", "collection symbol1", "banner uri", 0)
+                collections.createCollection("collection name", "collection symbol", "banner uri","description", 0),
+                collections.connect(signer2).createCollection("collection name1", "collection symbol1", "banner uri", "description",0),
+                collections.connect(signer3).createCollection("collection name1", "collection symbol1", "banner uri","description", 0)
             ])
 
 
@@ -148,9 +148,9 @@ xdescribe("Collections", () => {
 
             ])
 
-            const c1 = new ethers.Contract(collection1.collectionAddress, ERC721e.abi, signer)
-            const c2 = new ethers.Contract(collection2.collectionAddress, ERC721e.abi, signer)
-            const c3 = new ethers.Contract(collection3.collectionAddress, ERC721e.abi, signer)
+            const c1 = new ethers.Contract(collection1.collectionAddress, ERC721le.abi, signer)
+            const c2 = new ethers.Contract(collection2.collectionAddress, ERC721le.abi, signer)
+            const c3 = new ethers.Contract(collection3.collectionAddress, ERC721le.abi, signer)
 
             const [owner1, owner2, owner3] = await Promise.all([
                 c1.owner(),
@@ -163,7 +163,7 @@ xdescribe("Collections", () => {
             expect(owner3).to.equal(signer3.address)
 
         })
-        it('adds existing contract to the collection', async () => {
+        it('adds existing contract to the collection, and gets collections by Id', async () => {
 
             const Monuments = await ethers.getContractFactory('Monuments')
             const monuments = await Monuments.connect(signer2).deploy(tapp.address)
@@ -191,9 +191,9 @@ xdescribe("Collections", () => {
                 collections.getCollection(3)
             ])
 
-            const c1 = new ethers.Contract(collection1.collectionAddress, ERC721e.abi, signer2)
-            const c2 = new ethers.Contract(collection2.collectionAddress, ERC721e.abi, signer3)
-            const c3 = new ethers.Contract(collection3.collectionAddress, ERC721e.abi, signer)
+            const c1 = new ethers.Contract(collection1.collectionAddress, ERC721le.abi, signer2)
+            const c2 = new ethers.Contract(collection2.collectionAddress, ERC721le.abi, signer3)
+            const c3 = new ethers.Contract(collection3.collectionAddress, ERC721le.abi, signer)
 
             let [owner1, owner2, owner3] = await Promise.all([
                 c1.owner(),
@@ -214,7 +214,58 @@ xdescribe("Collections", () => {
             expect(owner1).to.equal(signer2.address)
             expect(owner2).to.equal(signer3.address)
             expect(owner3).to.equal(signer.address)
+        })
+        it('adds existing contract to the collection, and gets all collections', async () => {
 
+            const Monuments = await ethers.getContractFactory('Monuments')
+            const monuments = await Monuments.connect(signer2).deploy(tapp.address)
+            const monuments2 = await Monuments.connect(signer3).deploy(tapp.address)
+            const monuments3 = await Monuments.deploy(tapp.address)
+            await monuments.deployed()
+            await monuments2.deployed()
+            await monuments3.deployed()
+
+            const tx1 = await collections.connect(signer2).addCollection(monuments.address)
+            const tx2 = await collections.connect(signer3).addCollection(monuments2.address)
+            const tx3 = await collections.addCollection(monuments3.address)
+
+
+
+            await Promise.all([
+                tx1.wait(1),
+                tx2.wait(1),
+                tx3.wait(1)
+            ])
+
+            const [collection1, collection2, collection3] = await collections.getAllCollections()
+
+            console.log(collection1.collectionAddress)
+            console.log(collection2.collectionAddress)
+            console.log(collection3.collectionAddress)
+
+            const c1 = new ethers.Contract(collection1.collectionAddress, ERC721le.abi, signer2)
+            const c2 = new ethers.Contract(collection2.collectionAddress, ERC721le.abi, signer3)
+            const c3 = new ethers.Contract(collection3.collectionAddress, ERC721le.abi, signer)
+
+            let [owner1, owner2, owner3] = await Promise.all([
+                c1.owner(),
+                c2.owner(),
+                c3.owner()
+            ])
+
+            expect(owner1).to.equal(signer2.address)
+            expect(owner2).to.equal(signer3.address)
+            expect(owner3).to.equal(signer.address)
+
+            [owner1, owner2, owner3] = await Promise.all([
+                collections.owner(1),
+                collections.owner(2),
+                collections.owner(3)
+            ])
+
+            expect(owner1).to.equal(signer2.address)
+            expect(owner2).to.equal(signer3.address)
+            expect(owner3).to.equal(signer.address)
         })
     })
     describe("Failure", () => {

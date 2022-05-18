@@ -5,6 +5,7 @@ pragma solidity ^0.8.9;
 import "./interfaces/IERC721le.sol";
 import "./interfaces/IERC721.sol";
 import "./interfaces/IERC1155.sol";
+import "./interfaces/IERC1155MetaData.sol";
 import "./standards/ERC721le.sol";
 import "./Utils.sol";
 
@@ -22,6 +23,8 @@ contract Collections {
         ERC1155
     }
     struct Collection {
+        string name;
+        string description;
         string bannerUri;
         Type collectionType;
         address owner;
@@ -45,22 +48,6 @@ contract Collections {
         _tapp = tapp_;
     }
 
-    function _addCollection(
-        address _collection,
-        string memory _bannerUri,
-        Type _type
-    ) private {
-        collectionCount++;
-
-        _collections[collectionCount] = Collection({
-            bannerUri: _bannerUri,
-            owner: msg.sender,
-            collectionAddress: _collection,
-            collectionType: _type
-        });
-        _userCollections[msg.sender].push(collectionCount);
-    }
-
     function updateCollectionBanner(uint256 _id, string calldata _bannerUri)
         public
         validCollection(_id)
@@ -73,6 +60,17 @@ contract Collections {
         collection.bannerUri = _bannerUri;
     }
 
+    function updateCollectionDescription(
+        uint256 _id,
+        string calldata _description
+    ) public validCollection(_id) {
+        Collection storage collection = _collections[_id];
+        require(
+            collection.owner == msg.sender,
+            "Collections: You're not collection owner"
+        );
+        collection.description = _description;
+    }
 
     function addCollection(address _collection) public {
         require(_collection != address(0), "Collections: Invalid address");
@@ -82,11 +80,23 @@ contract Collections {
             "Collections: You're not the owner of contract"
         );
         if (IERC165(_collection).supportsInterface(type(IERC721).interfaceId)) {
-            _addCollection(_collection, "", Type.ERC721);
+            _addCollection(
+                _collection,
+                IERC721MetaData(_collection).name(),
+                "",
+                "",
+                Type.ERC721
+            );
         } else if (
             IERC165(_collection).supportsInterface(type(IERC1155).interfaceId)
         ) {
-            _addCollection(_collection, "", Type.ERC1155);
+            _addCollection(
+                _collection,
+                IERC1155MetaData(_collection).name(),
+                "",
+                "",
+                Type.ERC1155
+            );
         } else {
             revert("Collections: Unsupported smart contract detected");
         }
@@ -98,6 +108,7 @@ contract Collections {
         string calldata _name,
         string calldata _symbol,
         string calldata _bannerUri,
+        string calldata _description,
         Type _type
     ) public returns (address) {
         address collection;
@@ -120,7 +131,7 @@ contract Collections {
             )
         }
         require(collection != address(0), "Collections: Deployment failed");
-        _addCollection(collection, _bannerUri, _type);
+        _addCollection(collection, _name, _bannerUri, _description, _type);
         emit CollectionCreated(collection, msg.sender);
         return collection;
     }
@@ -155,7 +166,7 @@ contract Collections {
         Collection[] memory collections = new Collection[](collectionCount);
 
         for (uint256 i; i < collectionCount; i++) {
-            collections[i] = _collections[i];
+            collections[i] = _collections[i+1];
         }
 
         return collections;
@@ -180,5 +191,25 @@ contract Collections {
                 byteCode,
                 abi.encode(_name, _symbol, _tapp, msg.sender)
             );
+    }
+
+    function _addCollection(
+        address _collection,
+        string memory _name,
+        string memory _bannerUri,
+        string memory _description,
+        Type _type
+    ) private {
+        collectionCount++;
+
+        _collections[collectionCount] = Collection({
+            name: _name,
+            bannerUri: _bannerUri,
+            owner: msg.sender,
+            collectionAddress: _collection,
+            collectionType: _type,
+            description: _description
+        });
+        _userCollections[msg.sender].push(collectionCount);
     }
 }

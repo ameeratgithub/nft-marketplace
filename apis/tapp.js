@@ -1,19 +1,18 @@
-// import { ethers } from 'ethers'
 
 import { getTappContract } from '../utils/ethers'
 
 
 
-export const getUserBalance = (address, signer, tappAddress) => {
-    const tapp = getTappContract(signer, tappAddress)
+export const getUserBalance = (address, signer) => {
+    const tapp = getTappContract(signer)
     return tapp.balanceOf(address)
 }
-export const getLimit =  (signer, tappAddress) => {
-    const tapp = getTappContract(signer, tappAddress)
+export const getLimit =  (signer) => {
+    const tapp = getTappContract(signer)
     return tapp.currentBalanceLimit()
 }
 
-export const mint = (amount, signer, tappAddress) => {
-    const tapp = getTappContract(signer, tappAddress)
+export const mint = (amount, signer) => {
+    const tapp = getTappContract(signer)
     return tapp.mint(amount)
 }
