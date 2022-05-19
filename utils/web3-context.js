@@ -1,7 +1,7 @@
 import CoinbaseWalletSDK from "@coinbase/wallet-sdk"
 import WalletConnectProvider from "@walletconnect/web3-provider"
 import { ethers } from "ethers"
-import { createContext, useContext, useEffect, useState } from "react"
+import { createContext, useContext, useEffect, useMemo, useState } from "react"
 import Web3Modal from 'web3modal'
 
 
@@ -62,8 +62,9 @@ function switchNetwork() {
         try {
             provider.request({
                 method: 'wallet_switchEthereumChain',
-                params: [{ chainId}]
+                params: [{ chainId }]
             })
+            window.location.reload()
             return true
         } catch (error) {
             if (error.code === 4902) {
@@ -81,6 +82,7 @@ function switchNetwork() {
                         blockExplorerUrls: ["https://mumbai.polygonscan.com/"]
                     }]
                 });
+                window.location.reload()
                 return true
             }
             console.log("Failed to switch network")
@@ -93,17 +95,18 @@ function switchNetwork() {
 
 export default ({ children }) => {
     const [context, setContext] = useState({ provider: null, signer: null, address: '' })
+    const [contextLoading, setContextLoading] = useState(false)
 
-    useEffect(async () => {
+    useEffect(() => {
         initializeWeb3Modal()
-        if (window) loadAccount()
+        if (window && !context.address) loadAccount()
     }, [])
 
     const loadAccount = async () => {
+        setContextLoading(true)
         let provider, signer
         if (window.ethereum) {
             provider = new ethers.providers.Web3Provider(window.ethereum, 'any')
-
         } else {
             const item = localStorage.getItem("WEB3_CONNECT_CACHED_PROVIDER");
 
@@ -118,7 +121,6 @@ export default ({ children }) => {
             const proxy = await connector(options.package, options.options)
 
             provider = new ethers.providers.Web3Provider(proxy)
-
         }
 
 
@@ -133,6 +135,8 @@ export default ({ children }) => {
             if (chainId !== desiredChainId) return switchNetwork()
 
             setContext({ provider, signer, address })
+            setContextLoading(false)
+            return { provider, signer, address }
         } catch (err) {
             console.log(err)
         }
@@ -150,15 +154,18 @@ export default ({ children }) => {
             const address = await signer.getAddress()
 
             const desiredChainId = getDesiredChainId()
-            console.log(chainId, desiredChainId)
+            // console.log(chainId, desiredChainId)
             if (chainId !== desiredChainId) return switchNetwork()
 
             setContext({ provider, signer, address })
+            window.location.reload()
         }
         catch (err) { }
     }
 
-    return <Web3Context.Provider value={context}>
+    const contextValue = useMemo(() => ({ ...context, loading: contextLoading, loadAccount }), [context, contextLoading])
+    const contextConnect = useMemo(() => ({ connect }), [connect])
+    return <Web3Context.Provider value={contextValue}>
         <Web3UpdateContext.Provider value={connect}>
             {children}
         </Web3UpdateContext.Provider>

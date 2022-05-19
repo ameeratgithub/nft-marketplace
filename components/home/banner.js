@@ -4,12 +4,11 @@ import Link from "next/link"
 import React, { useContext, useState } from "react"
 import pic from '../../assets/images/bc-iso.jpg'
 import { useWeb3, useWeb3Update } from "../../utils/web3-context"
+import ConnectWallet from "../common/ConnectWallet"
 
 
 const Banner = () => {
     const { signer, provider, address } = useWeb3()
-
-    const connect = useWeb3Update()
 
     return <Grid container spacing={2} sx={{ display: 'flex', alignItems: 'center' }}>
         <Grid item md={6} lg={4}>
@@ -30,11 +29,9 @@ const Banner = () => {
                 <Container sx={{ display: 'flex', justifyContent: 'space-between', mt: '30px' }}>
                     {address ? <Link href={`/faucet`} passHref>
                         <Button variant="contained" sx={{ width: '65%' }}>
-                        Get Started
-                    </Button>
-                    </Link> : <Button variant="contained" sx={{ width: '65%' }} onClick={connect}>
-                        Connect Wallet
-                    </Button>}
+                            Get Started
+                        </Button>
+                    </Link> : <ConnectWallet />}
 
                 </Container>
             </Container>

@@ -23,6 +23,7 @@ contract Collections {
         ERC1155
     }
     struct Collection {
+        uint id;
         string name;
         string description;
         string bannerUri;
@@ -203,6 +204,7 @@ contract Collections {
         collectionCount++;
 
         _collections[collectionCount] = Collection({
+            id: collectionCount,
             name: _name,
             bannerUri: _bannerUri,
             owner: msg.sender,

@@ -8,20 +8,21 @@ export default function ({ children }) {
     const [isOpen, setIsOpen] = useState(false)
     const [count, setCount] = useState(0)
 
-    const { signer, provider, address } = useWeb3()
+    const { signer, provider, address, loadAccount } = useWeb3()
+
 
     useEffect(() => {
-        if (count > 3) return
+        showConnectionMessage()
+    }, [])
 
-        setTimeout(() => {
-            setCount(c => {
-                console.log(c, address)
-                if (c > 0 && !address && !isOpen)
-                    setIsOpen(true)
-                return c + 1;
-            })
-        }, 1000)
-    })
+    const showConnectionMessage = async () => {
+        
+        const account = await loadAccount()
+        console.log(account)
+        if (!account?.address && !isOpen) {
+            setIsOpen(true)
+        }
+    }
 
 
     const handleClose = () => {
@@ -29,10 +30,10 @@ export default function ({ children }) {
     }
 
     return <>
-        
+
 
         <ResponsiveAppBar></ResponsiveAppBar>
-        
+
 
         <Snackbar anchorOrigin={{ vertical: 'top', horizontal: 'center' }} open={isOpen}
             onClose={handleClose} autoHideDuration={6000}>
