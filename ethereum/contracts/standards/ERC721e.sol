@@ -16,7 +16,7 @@ contract ERC721e is ERC721, IERC721Receiver, IERC721e {
     uint256 public floorPrice;
 
     modifier onlyOwner() {
-        require(msg.sender == owner, "Monuments: You're not the owner");
+        require(msg.sender == owner, "ERC721e: You're not the owner");
         _;
     }
 
@@ -33,7 +33,7 @@ contract ERC721e is ERC721, IERC721Receiver, IERC721e {
         view
         returns (string[] memory)
     {
-        require(_tokenIds.length > 0, "Monuments: Pass some values");
+        require(_tokenIds.length > 0, "ERC721e: Pass some values");
         string[] memory uris = new string[](_tokenIds.length);
         for (uint256 i = 0; i < _tokenIds.length; i++) {
             uris[i] = tokenURI(_tokenIds[i]);
@@ -42,7 +42,7 @@ contract ERC721e is ERC721, IERC721Receiver, IERC721e {
     }
 
     // Need to approve tapp tokens first for this smart contract
-    function mint(string calldata _uri) public virtual returns (uint256) {
+    function mint(string calldata _uri) public virtual onlyOwner returns (uint256)  {
         tokenCount++;
 
         NFT storage token = _tokens[tokenCount];
@@ -53,6 +53,8 @@ contract ERC721e is ERC721, IERC721Receiver, IERC721e {
 
         token.uri = _uri;
 
+        token.id = tokenCount;
+
         emit Transfer(address(0), msg.sender, tokenCount);
 
         return tokenCount;
@@ -61,7 +63,7 @@ contract ERC721e is ERC721, IERC721Receiver, IERC721e {
     function getTokensList() public view returns (NFT[] memory) {
         NFT[] memory tokens = new NFT[](tokenCount);
         for (uint256 i; i < tokenCount; i++) {
-            tokens[i] = _tokens[i+1];
+            tokens[i] = _tokens[i + 1];
         }
 
         return tokens;
@@ -71,7 +73,7 @@ contract ERC721e is ERC721, IERC721Receiver, IERC721e {
         external
         onlyOwner
     {
-        require(_to != address(0), "Monuments: Invalid receipient");
+        require(_to != address(0), "ERC721e: Invalid receipient");
         transferFrom(address(this), _to, _tokenId);
     }
 

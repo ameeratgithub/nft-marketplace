@@ -5,6 +5,7 @@ pragma solidity ^0.8.9;
 interface IERC721 {
 
     struct NFT {
+        uint id;
         address owner;
         address creator;
         string uri;

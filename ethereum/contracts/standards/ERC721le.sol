@@ -39,6 +39,7 @@ contract ERC721le is ERC721e, IERC721le {
     function mintLazyToken(uint256 _tokenId, string calldata _uri)
         public
         validLazyToken(_tokenId)
+        onlyOwner
     {
         LazyNFT storage lazyToken = lazyTokens[_tokenId];
         require(
