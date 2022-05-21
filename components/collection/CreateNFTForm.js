@@ -1,11 +1,12 @@
 import { LoadingButton } from "@mui/lab"
-import { Alert, Button, FormControlLabel, FormGroup, Paper, Snackbar, Stack, Switch, TextField, Typography } from "@mui/material"
+import { Button, FormControlLabel, FormGroup, Paper, Stack, Switch, TextField, Typography } from "@mui/material"
 import { styled } from "@mui/system"
 import { useState } from "react"
 import { Web3Storage } from "web3.storage"
 import { lazyAdd, mint } from "../../apis/collection"
 import { _w } from "../../utils/ethers"
 import { useWeb3 } from "../../utils/web3-context"
+import Alert from "../common/Alert"
 
 const MintingPaper = styled(Paper)({
     position: 'absolute',
@@ -115,12 +116,13 @@ export default ({ web3StorageKey, collectionAddress, onSuccess }) => {
     }
 
     return <MintingPaper>
-        <Snackbar anchorOrigin={{ vertical: 'top', horizontal: 'center' }} open={isSnackbarOpen}
+        <Alert onClose={handleClose} isOpen={isSnackbarOpen} type={alert.type} message={alert.message} />
+        {/* <Snackbar anchorOrigin={{ vertical: 'top', horizontal: 'center' }} open={isSnackbarOpen}
             onClose={handleClose} autoHideDuration={6000}>
             <Alert onClose={handleClose} severity={alert.type ? alert.type : 'info'} sx={{ width: '100%' }}>
                 {alert.message}
             </Alert>
-        </Snackbar>
+        </Snackbar> */}
         <form>
             <Stack spacing={2}>
                 <Typography variant="h5">

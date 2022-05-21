@@ -6,38 +6,40 @@ import Link from 'next/link'
 import Layout from "../components/layout"
 import { _e, _w } from "../utils/ethers"
 import { useWeb3 } from "../utils/web3-context"
+import { useDappProvider, useUpdatedDappProvider } from "../utils/providers"
 
-export default ({}) => {
-    const [balance, setBalance] = useState(0)
-    const [limit, setLimit] = useState(0)
+export default ({ }) => {
+    // const [balance, setBalance] = useState(0)
+    // const [limit, setLimit] = useState(0)
     const [amount, setAmount] = useState('')
     const [loading, setLoading] = useState(false)
 
     const { signer, address } = useWeb3()
-
+    const { tapp: { balance, limit } } = useDappProvider()
+    const { loadTappData } = useUpdatedDappProvider()
     useEffect(() => {
-        if (address) loadBalance()
+        // if (address) loadBalance()
     }, [address])
 
     const loadBalance = async () => {
-        const [_b, _l] = await Promise.all([
-            getUserBalance(address,signer),
-            getLimit(signer)
-        ])
+        // const [_b, _l] = await Promise.all([
+        //     getUserBalance(address, signer),
+        //     getLimit(signer)
+        // ])
 
-        setBalance(_e(_b))
-        setLimit(_e(_l) - _e(_b))
+        // setBalance(_e(_b))
+        // setLimit(_e(_l) - _e(_b))
     }
 
     const _mint = async () => {
         if (Number(amount) > limit || Number(amount) <= 0) return
         setLoading(true)
         try {
-            const tx = await mint(_w(amount),signer)
+            const tx = await mint(_w(amount), signer)
             await tx.wait(1)
         } catch (err) { }
         setLoading(false)
-        loadBalance()
+        loadTappData()
     }
     return <Layout>
         <Container sx={{ display: 'flex', mt: '80px' }}>
@@ -48,7 +50,7 @@ export default ({}) => {
                 <Divider sx={{ mt: '10px', mb: '20px' }} />
                 <Typography variant="p" sx={{ mb: '20px' }} >You can mint {limit} more tapps</Typography>
                 <Link href={`/collections`} passHref>
-                    <Button variant="contained" sx={{width:'100%', mt:'33px'}} color="success">
+                    <Button variant="contained" sx={{ width: '100%', mt: '33px' }} color="success">
                         Explore Collections
                     </Button>
                 </Link>

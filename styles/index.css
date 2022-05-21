@@ -2,3 +2,7 @@ body{
     margin: 0;
     font-family: Roboto;
 }
+
+.MuiButton-containedPrimary{
+    background-color: #405171 !important;
+}

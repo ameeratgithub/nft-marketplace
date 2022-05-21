@@ -165,6 +165,7 @@ export default ({ children }) => {
 
     const contextValue = useMemo(() => ({ ...context, loading: contextLoading, loadAccount }), [context, contextLoading])
     const contextConnect = useMemo(() => ({ connect }), [connect])
+    
     return <Web3Context.Provider value={contextValue}>
         <Web3UpdateContext.Provider value={connect}>
             {children}

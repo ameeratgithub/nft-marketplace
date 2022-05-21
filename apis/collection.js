@@ -15,6 +15,11 @@ export const lazyAdd = (uri, price, address, signer) => {
     const collection = getERC721Contract(address, signer)
     return collection.addLazyToken(uri, price)
 }
+export const lazyMint = (lazyId, uri, address, signer) => {
+    const collection = getERC721Contract(address, signer)
+    return collection.mintLazyToken(lazyId, uri)
+}
+
 export const mint = (uri, address, signer) => {
     const collection = getERC721Contract(address, signer)
     return collection.mint(uri)

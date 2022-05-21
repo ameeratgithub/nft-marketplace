@@ -7,9 +7,14 @@ export const getUserBalance = (address, signer) => {
     const tapp = getTappContract(signer)
     return tapp.balanceOf(address)
 }
-export const getLimit =  (signer) => {
+
+export const getLimit = (signer) => {
     const tapp = getTappContract(signer)
     return tapp.currentBalanceLimit()
+}
+export const approve = (spender, amount, signer) => {
+    const tapp = getTappContract(signer)
+    return tapp.approve(spender, amount)
 }
 
 export const mint = (amount, signer) => {

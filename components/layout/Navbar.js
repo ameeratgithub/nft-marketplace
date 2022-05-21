@@ -37,7 +37,7 @@ const ResponsiveAppBar = () => {
     }; */
 
     return (
-        <AppBar position="static" style={{ marginBottom: '20px' }}>
+        <AppBar position="static" style={{ marginBottom: '20px', backgroundColor:'#405171' }}>
             <Container maxWidth="xl">
                 <Toolbar disableGutters>
                     <NLink href="/" passHref>
