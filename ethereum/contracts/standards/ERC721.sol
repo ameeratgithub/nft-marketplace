@@ -23,6 +23,7 @@ contract ERC721 is IERC721, IERC721MetaData, ERC165 {
 
     mapping(uint256 => address) private _singleApproval;
 
+
     constructor(string memory _name, string memory _symbol) {
         name = _name;
         symbol = _symbol;

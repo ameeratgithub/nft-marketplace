@@ -24,8 +24,9 @@ contract ERC721le is ERC721e, IERC721le {
         string memory _name,
         string memory _symbol,
         address _tapp,
-        address _owner
-    ) ERC721e(_name, _symbol) {
+        address _owner, 
+        address _userContract
+    ) ERC721e(_name, _symbol, _userContract) {
         owner = _owner;
         tapp = IERC20(_tapp);
     }

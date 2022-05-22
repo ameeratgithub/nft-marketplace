@@ -3,9 +3,11 @@
 pragma solidity ^0.8.9;
 
 import "./interfaces/IERC721le.sol";
+import "./interfaces/IERC721e.sol";
 import "./interfaces/IERC721.sol";
 import "./interfaces/IERC1155.sol";
 import "./interfaces/IERC1155MetaData.sol";
+import "./interfaces/IUser.sol";
 import "./standards/ERC721le.sol";
 import "./Utils.sol";
 
@@ -23,7 +25,7 @@ contract Collections {
         ERC1155
     }
     struct Collection {
-        uint id;
+        uint256 id;
         string name;
         string description;
         string bannerUri;
@@ -40,13 +42,16 @@ contract Collections {
 
     address private _tapp;
 
+    address public userContract;
+
     modifier validCollection(uint256 _id) {
         require(_id > 0 && _id <= collectionCount, "Collections: Invalid id");
         _;
     }
 
-    constructor(address tapp_) {
+    constructor(address tapp_, address _userContract) {
         _tapp = tapp_;
+        userContract = _userContract;
     }
 
     function updateCollectionBanner(uint256 _id, string calldata _bannerUri)
@@ -167,7 +172,7 @@ contract Collections {
         Collection[] memory collections = new Collection[](collectionCount);
 
         for (uint256 i; i < collectionCount; i++) {
-            collections[i] = _collections[i+1];
+            collections[i] = _collections[i + 1];
         }
 
         return collections;
@@ -190,7 +195,7 @@ contract Collections {
         return
             abi.encodePacked(
                 byteCode,
-                abi.encode(_name, _symbol, _tapp, msg.sender)
+                abi.encode(_name, _symbol, _tapp, msg.sender, userContract)
             );
     }
 

@@ -7,6 +7,7 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import "../standards/ERC721.sol";
 import "../interfaces/IERC721Receiver.sol";
 import "../interfaces/IERC721e.sol";
+import "../interfaces/IUser.sol";
 
 contract ERC721e is ERC721, IERC721Receiver, IERC721e {
     using Strings for uint256;
@@ -15,14 +16,18 @@ contract ERC721e is ERC721, IERC721Receiver, IERC721e {
 
     uint256 public floorPrice;
 
+    address userContract;
+
     modifier onlyOwner() {
         require(msg.sender == owner, "ERC721e: You're not the owner");
         _;
     }
 
-    constructor(string memory _name, string memory _symbol)
+    constructor(string memory _name, string memory _symbol, address _userContract)
         ERC721(_name, _symbol)
-    {}
+    {
+        userContract=_userContract;
+    }
 
     function setFloorPrice(uint256 _floorPrice) public onlyOwner {
         floorPrice = _floorPrice;
@@ -42,7 +47,12 @@ contract ERC721e is ERC721, IERC721Receiver, IERC721e {
     }
 
     // Need to approve tapp tokens first for this smart contract
-    function mint(string calldata _uri) public virtual onlyOwner returns (uint256)  {
+    function mint(string calldata _uri)
+        public
+        virtual
+        onlyOwner
+        returns (uint256)
+    {
         tokenCount++;
 
         NFT storage token = _tokens[tokenCount];
@@ -55,9 +65,20 @@ contract ERC721e is ERC721, IERC721Receiver, IERC721e {
 
         token.id = tokenCount;
 
+        IUser(userContract).addNft(msg.sender, address(this), tokenCount);
+
         emit Transfer(address(0), msg.sender, tokenCount);
 
         return tokenCount;
+    }
+
+    function userTransferFrom(
+        address _from,
+        address _to,
+        uint256 _tokenId
+    ) public {
+        transferFrom(_from, _to, _tokenId);
+        IUser(userContract).addNft(_to, address(this), _tokenId);
     }
 
     function getTokensList() public view returns (NFT[] memory) {
