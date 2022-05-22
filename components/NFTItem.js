@@ -1,10 +1,12 @@
 import { FavoriteBorder } from "@mui/icons-material"
 import { Button, Chip, Grid, IconButton, LinearProgress, Paper, Stack, Typography } from "@mui/material"
 import { styled } from "@mui/system"
-import { ethers } from "ethers"
+import Link from "next/link"
+
 import { useEffect, useState } from "react"
 import { lazyMint } from "../apis/collection"
 import { approve } from "../apis/tapp"
+import { getUserProfile } from "../apis/user"
 import { _e } from "../utils/ethers"
 import { loadMetadata } from "../utils/ipfs"
 import { useDappProvider } from "../utils/providers"
@@ -22,6 +24,15 @@ const NFTImage = styled('img')({
     boxShadow: '0px 3px 5px -1px rgb(0 0 0 / 20%), 0px 5px 8px 0px rgb(0 0 0 / 14%), 0px 1px 14px 0px rgb(0 0 0 / 12%)'
 
 })
+const ProfileImage = styled('img')({
+    width: '40px',
+    height: '40px',
+    objectFit: 'cover',
+    borderRadius: '100%',
+
+})
+
+
 export const AttributeBar = ({ value, title }) => {
     return <Stack spacing={1} sx={{ mt: '10px' }}>
         <Typography variant="subtitle2">{title}</Typography>
@@ -32,16 +43,22 @@ export const AttributeBar = ({ value, title }) => {
     </Stack>
 }
 export default ({ nft, collectionAddress, onMint }) => {
+    const fallBackImage = process.env.NEXT_PUBLIC_IMAGE_404
     const [nftMeta, setNftMeta] = useState({})
+    const [profile, setProfile] = useState({})
     const [isSnackbarOpen, setIsSnackbarOpen] = useState(false)
-    const { signer } = useWeb3()
+    const { signer, address } = useWeb3()
     const [alert, setAlert] = useState({})
     const { tapp: { balance } } = useDappProvider()
 
     useEffect(() => {
         fetchNftMetaData()
-    }, [])
-
+        if (address && nft.owner) fetchUserProfile()
+    }, [address])
+    const fetchUserProfile = async () => {
+        const p = await getUserProfile(nft.owner, signer)
+        setProfile(p)
+    }
     const fetchNftMetaData = async () => {
         try {
             const metaData = await loadMetadata(nft.uri)
@@ -75,14 +92,14 @@ export default ({ nft, collectionAddress, onMint }) => {
         }
         onMint()
     }
-
+    const onImageError = ({ currentTarget }) => {
+        currentTarget.onerror = null
+        currentTarget.src = fallBackImage
+    }
     return <Stack sx={{ position: 'relative' }}>
         <Alert onClose={handleClose} isOpen={isSnackbarOpen} message={alert.message} type={alert.type} />
-        <NFTImage src={nftMeta.image || process.env.NEXT_PUBLIC_IMAGE_404} alt={nftMeta.name} sx={{ boxShadow: 4 }}
-            onError={({ currentTarget }) => {
-                currentTarget.onerror = null
-                currentTarget.src = process.env.NEXT_PUBLIC_IMAGE_404
-            }} />
+        <NFTImage src={nftMeta.image || fallBackImage} alt={nftMeta.name} sx={{ boxShadow: 4 }}
+            onError={onImageError} />
         <Paper sx={{ padding: '15px', position: 'relative', left: "10px", top: '-10px' }} elevation={5}>
             <Stack sx={{ padding: '2px', pt: '15px' }}>
                 <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between">
@@ -100,7 +117,12 @@ export default ({ nft, collectionAddress, onMint }) => {
                         !nft.minted && !nft.owner && <Button variant="contained" size="small" onClick={mintLazy}>Mint</Button>
                     }
                     {
-                        nft.owner && <Typography variant="body" >Owned</Typography>
+                        nft.owner && profile?.id && <Link href={`/users/${profile.id}`} passHref>
+                            <a>
+                                <ProfileImage src={profile.picture} alt={profile.name || profile.userAddress}
+                                    onError={onImageError} />
+                            </a>
+                        </Link>
                     }
                     <IconButton aria-label="like"><FavoriteBorder /></IconButton>
                 </Stack>

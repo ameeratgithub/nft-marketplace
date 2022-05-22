@@ -1,7 +1,7 @@
 
 const hre = require("hardhat");
 
-let tapp, monuments, collections
+let tapp, monuments, collections, user
 
 const _e = (amount) => {
     return ethers.utils.parseEther(amount.toString())
@@ -15,17 +15,25 @@ async function deployTapp() {
 
     console.log("Tapp deployed to:", tapp.address);
 }
+async function deployUser() {
+
+    const User = await hre.ethers.getContractFactory("User");
+    user = await User.deploy();
+    await user.deployed();
+
+    console.log("User deployed to:", user.address);
+}
 
 async function deployMonuments() {
     const Monuments = await hre.ethers.getContractFactory("Monuments");
-    monuments = await Monuments.deploy(tapp.address);
+    monuments = await Monuments.deploy(tapp.address, user.address);
     await monuments.deployed();
 
     console.log("Monuments deployed to:", monuments.address);
 }
 async function deployCollections() {
     const Collections = await hre.ethers.getContractFactory("Collections");
-    collections = await Collections.deploy(tapp.address);
+    collections = await Collections.deploy(tapp.address, user.address);
     await collections.deployed();
 
     console.log("Collections deployed to:", collections.address);
@@ -62,14 +70,14 @@ async function addMintableItems() {
 
 async function main() {
     await deployTapp()
+
+    await deployUser()
     
     await deployMonuments()
     
     await deployCollections()
 
     await addMonumentsToCollection()
-
-    
 
 }
 

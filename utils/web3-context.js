@@ -3,6 +3,7 @@ import WalletConnectProvider from "@walletconnect/web3-provider"
 import { ethers } from "ethers"
 import { createContext, useContext, useEffect, useMemo, useState } from "react"
 import Web3Modal from 'web3modal'
+import { addUser, getUserId, getUserProfile } from "../apis/user"
 
 
 
@@ -131,9 +132,12 @@ export default ({ children }) => {
             const { chainId } = await provider.getNetwork()
 
             const desiredChainId = getDesiredChainId()
-            console.log(chainId, desiredChainId)
             if (chainId !== desiredChainId) return switchNetwork()
 
+            const id = await getUserId(address, signer);
+            if (id.toString() === "0") {
+                await addUser(address, signer)
+            }
             setContext({ provider, signer, address })
             setContextLoading(false)
             return { provider, signer, address }
@@ -154,7 +158,7 @@ export default ({ children }) => {
             const address = await signer.getAddress()
 
             const desiredChainId = getDesiredChainId()
-            // console.log(chainId, desiredChainId)
+
             if (chainId !== desiredChainId) return switchNetwork()
 
             setContext({ provider, signer, address })
@@ -165,7 +169,7 @@ export default ({ children }) => {
 
     const contextValue = useMemo(() => ({ ...context, loading: contextLoading, loadAccount }), [context, contextLoading])
     const contextConnect = useMemo(() => ({ connect }), [connect])
-    
+
     return <Web3Context.Provider value={contextValue}>
         <Web3UpdateContext.Provider value={connect}>
             {children}
