@@ -3,6 +3,6 @@ body{
     font-family: Roboto;
 }
 
-.MuiButton-containedPrimary{
+.MuiButton-containedPrimary:not(.MuiLoadingButton-loading){
     background-color: #405171 !important;
 }

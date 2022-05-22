@@ -24,3 +24,11 @@ export const mint = (uri, address, signer) => {
     const collection = getERC721Contract(address, signer)
     return collection.mint(uri)
 }
+export const ownerOf721 = (tokenId, address, signer) => {
+    const collection = getERC721Contract(address, signer)
+    return collection.ownerOf(tokenId)
+}
+export const tokensByIds721 = (tokenIds, address, signer) => {
+    const collection = getERC721Contract(address, signer)
+    return collection.tokensByIds(tokenIds)
+}

@@ -23,10 +23,12 @@ contract ERC721e is ERC721, IERC721Receiver, IERC721e {
         _;
     }
 
-    constructor(string memory _name, string memory _symbol, address _userContract)
-        ERC721(_name, _symbol)
-    {
-        userContract=_userContract;
+    constructor(
+        string memory _name,
+        string memory _symbol,
+        address _userContract
+    ) ERC721(_name, _symbol) {
+        userContract = _userContract;
     }
 
     function setFloorPrice(uint256 _floorPrice) public onlyOwner {
@@ -44,6 +46,20 @@ contract ERC721e is ERC721, IERC721Receiver, IERC721e {
             uris[i] = tokenURI(_tokenIds[i]);
         }
         return uris;
+    }
+
+    function tokensByIds(uint256[] calldata _tokenIds)
+        public
+        view
+        returns (NFT[] memory)
+    {
+        require(_tokenIds.length > 0, "ERC721e: Pass some values");
+        NFT[] memory tokens = new NFT[](_tokenIds.length);
+        for (uint256 i; i < tokenCount; i++) {
+            tokens[i] = _tokens[_tokenIds[i]];
+        }
+
+        return tokens;
     }
 
     // Need to approve tapp tokens first for this smart contract

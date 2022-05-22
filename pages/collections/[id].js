@@ -23,7 +23,7 @@ export default ({ web3StorageKey }) => {
     const router = useRouter()
 
     const { signer, address, loading } = useWeb3()
-    const { id, type } = router.query
+    const { id } = router.query
     const [collection, setCollection] = useState({})
     const [tokens, setTokens] = useState([])
     const [lazyTokens, setLazyTokens] = useState([])
@@ -95,10 +95,6 @@ export default ({ web3StorageKey }) => {
     const CollectionStack = <Stack>
         <Grid container direction="row" justifyContent="space-between" sx={{ mt: '250px', color: 'white' }}>
             <Typography variant="h5">{collection.name}</Typography>
-            {!loading && collection.owner == address && <Button variant="contained" color="success"
-                onClick={e => setOpenMintingModal(true)}>
-                Create
-            </Button>}
         </Grid>
         <Typography variant="body" sx={{ color: 'wheat' }}>{collection.description}</Typography>
         <Grid container direction="row" justifyContent="space-between" sx={{ mt: '15px' }}>
@@ -106,7 +102,10 @@ export default ({ web3StorageKey }) => {
                 <Chip sx={{ mr: '10px', color: 'lightblue' }} label={`${lazyTokens.length} Mintable NFTs`} />
                 <Chip sx={{ color: 'lightblue' }} label={`${tokens.length} Minted NFTs`} />
             </Grid>
-
+            {!loading && collection.owner == address && <Button variant="contained" color="success"
+                onClick={e => setOpenMintingModal(true)}>
+                Create
+            </Button>}
         </Grid>
         <Grid container direction="row" justifyContent="flex-end" sx={{ mt: '45px' }}>
             <Grid item>

@@ -2,7 +2,6 @@ import { Card, CardActionArea, CardContent, CardMedia, Typography } from "@mui/m
 import Link from 'next/link';
 export default ({ collection }) => {
     const {id, name, description, bannerUri, collectionAddress, owner, collectionType } = collection
-    console.log(collection)
     return <Link href={`/collections/${id}?type=${collectionType}`} passHref>
         <Card>
             <CardActionArea>

@@ -81,6 +81,7 @@ export default ({ nft, collectionAddress, onMint }) => {
         if (balance < _e(nft.price)) {
             return showAlert(`You need ${_e(nft.price) - balance} more tapps to mint NFT`, 'warning')
         }
+        if (!collectionAddress) return
         try {
             await approveTapps()
             const tx = await lazyMint(nft.id, nft.uri, collectionAddress, signer)
@@ -114,7 +115,9 @@ export default ({ nft, collectionAddress, onMint }) => {
                 <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between"
                     sx={{ mt: '10px' }}>
                     {
-                        !nft.minted && !nft.owner && <Button variant="contained" size="small" onClick={mintLazy}>Mint</Button>
+                        !nft.minted && !nft.owner && <Button variant="contained" size="small" onClick={mintLazy}>
+                            Mint
+                        </Button>
                     }
                     {
                         nft.owner && profile?.id && <Link href={`/users/${profile.id}`} passHref>
