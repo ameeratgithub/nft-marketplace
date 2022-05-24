@@ -29,7 +29,7 @@ async function deployMonuments() {
     monuments = await Monuments.deploy(tapp.address, user.address);
     await monuments.deployed();
 
-    console.log("Monuments deployed to:", monuments.address);
+    // console.log("Monuments deployed to:", monuments.address);
 }
 async function deployCollections() {
     const Collections = await hre.ethers.getContractFactory("Collections");
@@ -49,9 +49,9 @@ async function addMonumentsToCollection() {
     await collections.updateCollectionBanner(1, banner)
     await collections.updateCollectionDescription(1, description)
     const _collections = await collections.getAllCollections()
-    console.log(_collections[0].collectionAddress)
+    // console.log(_collections[0].collectionAddress)
     await addMintableItems()
-    console.log(`Adding ${monuments.address} to ${collections.address}`)
+    // console.log(`Adding ${monuments.address} to ${collections.address}`)
 }
 
 async function addMintableItems() {

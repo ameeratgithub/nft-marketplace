@@ -12,32 +12,33 @@ import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import { useState } from 'react';
 import NLink from 'next/link';
-import { Link } from '@mui/material'
+import { Grid, Link } from '@mui/material'
+import { ProfileImage } from '../NFTItem';
 
 const pages = ['Faucet', 'Collections'];
-// const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
 
-const ResponsiveAppBar = () => {
+const ResponsiveAppBar = ({ profile }) => {
+
+    console.log(profile)
+
+    const fallBackImage = process.env.NEXT_PUBLIC_IMAGE_404
+
     const [anchorElNav, setAnchorElNav] = useState(null);
-    // const [anchorElUser, setAnchorElUser] = useState(null);
 
     const handleOpenNavMenu = (event) => {
         setAnchorElNav(event.currentTarget);
     };
-    /* const handleOpenUserMenu = (event) => {
-        setAnchorElUser(event.currentTarget);
-    }; */
 
     const handleCloseNavMenu = () => {
         setAnchorElNav(null);
     };
 
-    /* const handleCloseUserMenu = () => {
-        setAnchorElUser(null);
-    }; */
-
+    const onImageError = ({ currentTarget }) => {
+        currentTarget.onerror = null
+        currentTarget.src = fallBackImage
+    }
     return (
-        <AppBar position="static" style={{ marginBottom: '20px', backgroundColor:'#405171' }}>
+        <AppBar position="static" style={{ marginBottom: '20px', backgroundColor: '#405171' }}>
             <Container maxWidth="xl">
                 <Toolbar disableGutters>
                     <NLink href="/" passHref>
@@ -111,35 +112,17 @@ const ResponsiveAppBar = () => {
                         ))}
                     </Box>
 
-                    {/* <Box sx={{ flexGrow: 0 }}>
-                        <Tooltip title="Open settings">
-                            <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                                <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" />
-                            </IconButton>
-                        </Tooltip>
-                        <Menu
-                            sx={{ mt: '45px' }}
-                            id="menu-appbar"
-                            anchorEl={anchorElUser}
-                            anchorOrigin={{
-                                vertical: 'top',
-                                horizontal: 'right',
-                            }}
-                            keepMounted
-                            transformOrigin={{
-                                vertical: 'top',
-                                horizontal: 'right',
-                            }}
-                            open={Boolean(anchorElUser)}
-                            onClose={handleCloseUserMenu}
-                        >
-                            {settings.map((setting) => (
-                                <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                                    <Typography textAlign="center">{setting}</Typography>
-                                </MenuItem>
-                            ))}
-                        </Menu>
-                    </Box> */}
+                    {profile?.id && <Grid container direction="row" justifyContent="flex-end" sx={{mr:'30px'}}>
+                        <Grid item>
+                            <NLink href={`/users/${profile.id}`} passHref>
+                                <a style={{ display: 'flex', color: 'inherit', textDecoration: 'none', alignItems: 'center' }}>
+                                    <ProfileImage src={profile.picture} alt={profile.name || profile.userAddress}
+                                        onError={onImageError} />
+                                    <Typography variant="body2" style={{ marginLeft: '10px' }}>{profile.name || `User#${profile.id}`}</Typography>
+                                </a>
+                            </NLink>
+                        </Grid>
+                    </Grid>}
                 </Toolbar>
             </Container>
         </AppBar>

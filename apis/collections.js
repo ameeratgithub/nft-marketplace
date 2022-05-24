@@ -11,3 +11,7 @@ export const getCollection = (id,signer) => {
     const collections = getCollectionsContract(signer)
     return collections.getCollection(id)
 }
+export const getUserCollections = (userAddress,signer) => {
+    const collections = getCollectionsContract(signer)
+    return collections.getUserCollections(userAddress)
+}

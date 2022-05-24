@@ -22,3 +22,15 @@ export const addUser = async (userAddress, signer) => {
     const user = getUserContract(signer)
     return user.add(userAddress)
 }
+export const changeName = async (userId, name, signer) => {
+    const user = getUserContract(signer)
+    return user.addName(userId, name)
+}
+export const changePicture = async (userId, picture, signer) => {
+    const user = getUserContract(signer)
+    return user.addPicture(userId, picture)
+}
+export const changeCover = async (userId, cover, signer) => {
+    const user = getUserContract(signer)
+    return user.addCover(userId, cover)
+}

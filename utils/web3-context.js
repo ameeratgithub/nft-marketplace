@@ -95,12 +95,11 @@ function switchNetwork() {
 
 
 export default ({ children }) => {
-    const [context, setContext] = useState({ provider: null, signer: null, address: '' })
+    const [context, setContext] = useState({ provider: null, signer: null, address: '', profile: {} })
     const [contextLoading, setContextLoading] = useState(false)
 
     useEffect(() => {
         initializeWeb3Modal()
-        if (window && !context.address) loadAccount()
     }, [])
 
     const loadAccount = async () => {
@@ -134,13 +133,17 @@ export default ({ children }) => {
             const desiredChainId = getDesiredChainId()
             if (chainId !== desiredChainId) return switchNetwork()
 
-            const id = await getUserId(address, signer);
-            if (id.toString() === "0") {
-                await addUser(address, signer)
+            let profile = await getUserProfile(address, signer);
+
+            if (profile.id.toString() === "0") {
+                const tx = await addUser(address, signer)
+                await tx.wait(1)
+                profile = await getUserProfile(address, signer);
             }
-            setContext({ provider, signer, address })
+
+            setContext({ provider, signer, address, profile })
             setContextLoading(false)
-            return { provider, signer, address }
+            return { provider, signer, address, profile }
         } catch (err) {
             console.log(err)
         }

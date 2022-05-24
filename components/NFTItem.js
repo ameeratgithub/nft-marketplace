@@ -24,7 +24,7 @@ const NFTImage = styled('img')({
     boxShadow: '0px 3px 5px -1px rgb(0 0 0 / 20%), 0px 5px 8px 0px rgb(0 0 0 / 14%), 0px 1px 14px 0px rgb(0 0 0 / 12%)'
 
 })
-const ProfileImage = styled('img')({
+export const ProfileImage = styled('img')({
     width: '40px',
     height: '40px',
     objectFit: 'cover',
@@ -104,7 +104,7 @@ export default ({ nft, collectionAddress, onMint }) => {
         <Paper sx={{ padding: '15px', position: 'relative', left: "10px", top: '-10px' }} elevation={5}>
             <Stack sx={{ padding: '2px', pt: '15px' }}>
                 <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between">
-                    <Typography variant="body" >{nftMeta?.name || 'Metadata Loading'}</Typography>
+                    <Typography variant="subtitle1" >{nftMeta?.name || 'Metadata Loading'}</Typography>
                     {nft.price && <Chip label={_e(nft.price)} size="small" />}
                 </Stack>
 
@@ -115,19 +115,19 @@ export default ({ nft, collectionAddress, onMint }) => {
                 <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between"
                     sx={{ mt: '10px' }}>
                     {
-                        !nft.minted && !nft.owner && <Button variant="contained" size="small" onClick={mintLazy}>
+                        !nft.minted && !nft.owner && <Button variant="contained" size="small" onClick={mintLazy} sx={{ width: '100%' }}>
                             Mint
                         </Button>
                     }
                     {
                         nft.owner && profile?.id && <Link href={`/users/${profile.id}`} passHref>
-                            <a>
+                            <a style={{ display: 'flex', color: 'inherit', textDecoration: 'none', alignItems: 'center' }}>
                                 <ProfileImage src={profile.picture} alt={profile.name || profile.userAddress}
                                     onError={onImageError} />
+                                <Typography variant="body2" style={{ marginLeft: '10px' }}>{profile.name || `User#${profile.id}`}</Typography>
                             </a>
                         </Link>
                     }
-                    <IconButton aria-label="like"><FavoriteBorder /></IconButton>
                 </Stack>
 
             </Stack>

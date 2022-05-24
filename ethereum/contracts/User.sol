@@ -93,7 +93,6 @@ contract User is IUser {
             collections[i].collectionAddress = collectionAddress;
 
             collections[i].tokens = profile.ownedNfts[collectionAddress];
-            
         }
 
         return collections;
