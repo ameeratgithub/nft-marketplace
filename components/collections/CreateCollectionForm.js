@@ -1,9 +1,9 @@
 import { LoadingButton } from "@mui/lab"
-import { Button, FormControlLabel, FormGroup, Paper, Stack, Switch, TextField, Typography } from "@mui/material"
+import { Button, FormControl, FormControlLabel, FormGroup, InputLabel, MenuItem, Paper, Select, Stack, Switch, TextField, Typography } from "@mui/material"
 import { styled } from "@mui/system"
 import { useState } from "react"
 import { Web3Storage } from "web3.storage"
-import { lazyAdd, mint } from "../../apis/collection"
+import { createCollection } from '../../apis/collections'
 import { _w } from "../../utils/ethers"
 import { useWeb3 } from "../../utils/web3-context"
 import Alert from "../common/Alert"
@@ -16,7 +16,7 @@ const MintingPaper = styled(Paper)({
     width: '50%'
 })
 
-export default ({ web3StorageKey, collectionAddress, onSuccess }) => {
+export default ({ web3StorageKey, onSuccess }) => {
 
     const client = new Web3Storage({ token: web3StorageKey })
     const ipfsGateway = process.env.NEXT_PUBLIC_IPFS_GATEWAY
@@ -29,15 +29,16 @@ export default ({ web3StorageKey, collectionAddress, onSuccess }) => {
     const [name, setName] = useState('')
     const [nameErr, setNameErr] = useState(false)
 
+    const [symbol, setSymbol] = useState('')
+    const [symbolErr, setSymbolErr] = useState(false)
+
     const [description, setDescription] = useState('')
     const [descriptionErr, setDescriptionErr] = useState(false)
 
-    const [image, setImage] = useState('')
 
-    const [mintNow, setMintNow] = useState(true)
+    const [type, setType] = useState(0)
 
-    const [price, setPrice] = useState('')
-    const [priceErr, setPriceErr] = useState(false)
+    const [bannerUri, setBannerUri] = useState('')
 
     const [buttonLoading, setButtonLoading] = useState(false)
 
@@ -51,29 +52,29 @@ export default ({ web3StorageKey, collectionAddress, onSuccess }) => {
         validate(input, setNameErr)
         setName(input)
     }
+    const handleSymbol = e => {
+        const input = e.target.value
+        validate(input, setSymbolErr)
+        setSymbol(input)
+    }
     const handleDescription = e => {
         const input = e.target.value
         validate(input, setDescriptionErr)
         setDescription(input)
     }
-    const handlePrice = e => {
-        const input = e.target.value
-        validate(Number(input) > 0 || Number(input) <= 2000, setPriceErr)
-        setPrice(input)
-    }
-    const uploadImage = async (ev) => {
-        showAlert({ message: 'Uploading Image' })
+
+    const uploadBanner = async (ev) => {
+        showAlert({ message: 'Uploading Banner' })
         try {
-            // const rootCID = 'rootCID'
             const rootCID = await client.put(ev.target.files, { maxRetries: 2 })
             const _image = `https://${rootCID}.${ipfsGateway}/${ev.target.files[0].name}`
-            setImage(_image)
+            setBannerUri(_image)
 
             hideAlert()
-            showAlert({ message: 'Image uploaded' })
+            showAlert({ message: 'Banner uploaded. It may take a while to appear. Please be patient' })
         } catch (err) {
             hideAlert()
-            showAlert({ message: 'Error while uploading image', type: 'error' })
+            showAlert({ message: 'Error while uploading banner', type: 'error' })
         }
     }
     const showAlert = (alert) => {
@@ -87,25 +88,16 @@ export default ({ web3StorageKey, collectionAddress, onSuccess }) => {
     const handleClose = () => {
         setIsSnackbarOpen(false)
     }
-    const uploadMetadata = async () => {
-        if (!name || !description) return;
-        if (!image) return showAlert({ message: 'Please choose an Image', type: 'warning' });
-        if (!mintNow && !price) return showAlert({ message: 'Please enter minting price', type: 'warning' });
-
+    const addCollection = async () => {
+        console.log(type)
+        if (!name || !description || !symbol) return showAlert({ message: 'Please provide all fields', type: 'warning' });
+        if (!bannerUri) return showAlert({ message: 'Please choose a banner', type: 'warning' });
         try {
             setButtonLoading(true)
-            const f = new File([JSON.stringify({ name, description, image })],
-                "metadata.json", { type: 'application/json', lastModified: Date.now() })
-            console.log(f)
-            const rootCID = await client.put([f], { maxRetries: 2 })
-            console.log("Metadata saved with hash", rootCID);
 
-            showAlert({ message: 'Metadata is saved on IPFS. It may take a while to show metadata (image, name)' })
-            const uri = `https://${rootCID}.${ipfsGateway}/metadata.json`;
-            console.log("URI for NFT is", uri)
+            const tx = await createCollection(name, symbol, bannerUri, description, type, signer)
+            await tx.wait(1)
 
-            if (mintNow) await mint(uri, collectionAddress, signer)
-            else await lazyAdd(uri, _w(price), collectionAddress, signer)
             onSuccess()
         } catch (err) {
             console.log(err)
@@ -120,7 +112,7 @@ export default ({ web3StorageKey, collectionAddress, onSuccess }) => {
         <form>
             <Stack spacing={2}>
                 <Typography variant="h5">
-                    Create NFT
+                    Create Collection
                 </Typography>
                 <TextField
                     error={nameErr}
@@ -130,6 +122,15 @@ export default ({ web3StorageKey, collectionAddress, onSuccess }) => {
                     label="Name"
                     value={name}
                     onChange={handleName}
+                />
+                <TextField
+                    error={symbolErr}
+                    helperText={symbolErr && "Symbol is required"}
+                    required
+                    id="symbol"
+                    label="Symbol"
+                    value={symbol}
+                    onChange={handleSymbol}
                 />
                 <TextField
                     error={descriptionErr}
@@ -144,38 +145,33 @@ export default ({ web3StorageKey, collectionAddress, onSuccess }) => {
                     variant="outlined"
                     component="label"
                 >
-                    Upload Image
+                    Upload Banner
                     <input
                         type="file"
                         hidden
-                        onChange={uploadImage}
+                        onChange={uploadBanner}
                     />
                 </Button>
-                <FormGroup>
-                    <FormControlLabel control={
-                        <Switch checked={mintNow} onChange={ev => setMintNow(ev.target.checked)
-                        } />} label="Mint Now" />
-                </FormGroup>
-                {!mintNow && <TextField
-                    error={priceErr}
-                    helperText={priceErr && `Please enter valid price (Max 2000 Tapps)`}
-                    label="Minting price of NFT (Tapps)"
-                    type="number"
-                    id="price"
-                    value={price}
-                    InputLabelProps={{
-                        shrink: true,
-                    }}
-                    inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
-                    onChange={handlePrice}
-                />}
+                <FormControl>
+                    <InputLabel id="type-label">Type</InputLabel>
+                    <Select
+                        labelId="type-label"
+                        id="type-select"
+                        value={type}
+                        label="Type"
+                        onChange={e => setType(e.target.value)}
+                    >
+                        <MenuItem value="0">ERC721</MenuItem>
+                        <MenuItem value="1" disabled>ERC1155</MenuItem>
+                    </Select>
+                </FormControl>
                 <LoadingButton
                     variant="contained"
                     component="label"
-                    onClick={uploadMetadata}
+                    onClick={addCollection}
                     loading={buttonLoading}
                 >
-                    Create NFT
+                    Create Collection
                 </LoadingButton>
             </Stack>
         </form>

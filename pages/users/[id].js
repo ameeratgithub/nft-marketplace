@@ -444,19 +444,19 @@ export default ({ web3StorageKey }) => {
                     </MaterialBox>
                     <TabPanel value={tabValue} index={0}>
                         <Grid container spacing={12} sx={{ mb: '40px' }}>
-                            {tokens?.map(t => <Grid item xs={12} md={4} lg={3} xl={3} key={t.id.toString()}>
+                            {tokens?.length > 0 ? tokens?.map(t => <Grid item xs={12} md={4} lg={3} xl={3} key={t.id.toString()}>
                                 <NFTItem nft={t} />
-                            </Grid>)}
+                            </Grid>) : <Grid item><Typography variant="subtitle1">No Owned NFT Found</Typography></Grid>}
                         </Grid>
                     </TabPanel>
                     <TabPanel value={tabValue} index={1}>
-                        <Grid container direction="row">
+                        <Grid container direction="row" spacing={4}>
                             {
-                                collections?.map((c, i) =>
+                                collections?.length > 0 ? collections?.map((c, i) =>
                                     <Grid key={i} item lg={4} xl={4} md={4} sm={12}>
                                         <CollectionCard collection={c} />
                                     </Grid>
-                                )
+                                ) : <Grid item> <Typography variant="subtitle1">No Collection Found</Typography></Grid>
                             }
                         </Grid>
                     </TabPanel>
