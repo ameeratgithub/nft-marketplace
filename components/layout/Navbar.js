@@ -41,88 +41,49 @@ const ResponsiveAppBar = ({ profile }) => {
         <AppBar position="static" style={{ marginBottom: '20px', backgroundColor: '#405171' }}>
             <Container maxWidth="xl">
                 <Toolbar disableGutters>
-                    <NLink href="/" passHref>
-                        <Link
-                            underline="none"
-                            style={{ color: 'white' }}
-                            variant="h6"
-                            noWrap
-                            sx={{ mr: 2, display: { xs: 'none', md: 'flex' } }}
-                        >
-                            NFT Marketplace
-                        </Link>
-
-                    </NLink>
-
-                    <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
-                        <IconButton
-                            size="large"
-                            aria-label="account of current user"
-                            aria-controls="menu-appbar"
-                            aria-haspopup="true"
-                            onClick={handleOpenNavMenu}
-                            color="inherit"
-                        >
-                            <MenuIcon />
-                        </IconButton>
-                        <Menu
-                            id="menu-appbar"
-                            anchorEl={anchorElNav}
-                            anchorOrigin={{
-                                vertical: 'bottom',
-                                horizontal: 'left',
-                            }}
-                            keepMounted
-                            transformOrigin={{
-                                vertical: 'top',
-                                horizontal: 'left',
-                            }}
-                            open={Boolean(anchorElNav)}
-                            onClose={handleCloseNavMenu}
-                            sx={{
-                                display: { xs: 'block', md: 'none' },
-                            }}
-                        >
-                            {pages.map((page) => (
-                                <MenuItem key={page} onClick={handleCloseNavMenu}>
-                                    <Typography textAlign="center">{page}</Typography>
-                                </MenuItem>
-                            ))}
-                        </Menu>
-                    </Box>
-                    <Typography
-                        variant="h6"
-                        noWrap
-                        component="div"
-                        sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}
-                    >
-                        LOGO
-                    </Typography>
-                    <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-                        {pages.map((page) => (
-                            <NLink key={page} href={`/${page.toLowerCase()}`} passHref>
-                                <Button
-
-                                    onClick={handleCloseNavMenu}
-                                    sx={{ my: 2, color: 'white', display: 'block' }}
+                    <Grid container direction="row" alignItems="center">
+                        <Grid item md={2} sm={4}>
+                            <NLink href="/" passHref>
+                                <Link
+                                    underline="none"
+                                    style={{ color: 'white' }}
+                                    variant="h6"
+                                    noWrap
+                                    sx={{ mr: 2, display: { xs: 'none', md: 'flex' } }}
                                 >
-                                    {page}
-                                </Button>
-                            </NLink>
-                        ))}
-                    </Box>
-
-                    {profile?.id && <Grid container direction="row" justifyContent="flex-end" sx={{mr:'30px'}}>
-                        <Grid item>
-                            <NLink href={`/users/${profile.id}`} passHref>
-                                <a style={{ display: 'flex', color: 'inherit', textDecoration: 'none', alignItems: 'center' }}>
-                                    <ProfileImage src={profile.picture} alt={profile.name || profile.userAddress}
-                                        onError={onImageError} />
-                                    <Typography variant="body2" style={{ marginLeft: '10px' }}>{profile.name || `User#${profile.id}`}</Typography>
-                                </a>
+                                    NFT Marketplace
+                                </Link>
                             </NLink>
                         </Grid>
-                    </Grid>}
+                        <Grid item md={8}>
+                            <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
+                                {pages.map((page) => (
+                                    <NLink key={page} href={`/${page.toLowerCase()}`} passHref>
+                                        <Button
+
+                                            onClick={handleCloseNavMenu}
+                                            sx={{ my: 2, color: 'white', display: 'block' }}
+                                        >
+                                            {page}
+                                        </Button>
+                                    </NLink>
+                                ))}
+                            </Box>
+                        </Grid>
+                        {profile?.id &&
+                            <Grid item md={2}>
+                                <NLink href={`/users/${profile.id}`} passHref>
+                                    <a style={{ display: 'flex', color: 'inherit', textDecoration: 'none', alignItems: 'center' }}>
+                                        <ProfileImage src={profile.picture} alt={profile.name || profile.userAddress}
+                                            onError={onImageError} />
+                                        <Typography variant="body2" style={{ marginLeft: '10px' }}>{profile.name || `User#${profile.id}`}</Typography>
+                                    </a>
+                                </NLink>
+                            </Grid>
+                        }
+                    </Grid>
+
+
                 </Toolbar>
             </Container>
         </AppBar>
