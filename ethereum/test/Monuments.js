@@ -11,13 +11,17 @@ const _e = (amount) => {
 }
 
 xdescribe("Monuments", () => {
-    let monuments, signer, signer2, signer3, tapp
+    let monuments, signer, signer2, signer3, tapp, marketplace
 
     beforeEach(async () => {
         [signer, signer2, signer3] = await ethers.getSigners()
 
         const Tapp = await ethers.getContractFactory('Tapp')
         tapp = await Tapp.deploy()
+
+        const Marketplace = await ethers.getContractFactory('Marketplace')
+        marketplace = await Marketplace.deploy()
+        await marketplace.deployed()
 
         const Monuments = await ethers.getContractFactory('Monuments')
         monuments = await Monuments.deploy(tapp.address)

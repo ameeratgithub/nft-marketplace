@@ -21,4 +21,14 @@ interface IERC721e is IERC721 {
         external
         view
         returns (NFT[] memory);
+
+    function userTransferFrom(
+        address _from,
+        address _to,
+        uint256 _tokenId
+    ) external;
+
+    function putOnSale(uint256 _tokenId, uint256 _marketItemId) external;
+
+    function createSale(uint256 _tokenId) external;
 }

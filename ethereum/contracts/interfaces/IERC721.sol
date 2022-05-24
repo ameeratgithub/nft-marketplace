@@ -3,12 +3,19 @@
 pragma solidity ^0.8.9;
 
 interface IERC721 {
-
+    struct Offer {
+        address buyer;
+        uint256 price;
+    }
     struct NFT {
-        uint id;
+        uint256 id;
+        uint256 marketItemId;
+        address contractAddress;
         address owner;
         address creator;
         string uri;
+        bool onSale;
+        Offer[] offers;
     }
 
     event Transfer(
@@ -53,6 +60,7 @@ interface IERC721 {
     ) external;
 
     function approve(address _approved, uint256 _tokenId) external;
+
     function setApprovalForAll(address _operator, bool _approved) external;
 
     function getApproved(uint256 _tokenId) external view returns (address);

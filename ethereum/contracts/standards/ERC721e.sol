@@ -17,6 +17,7 @@ contract ERC721e is ERC721, IERC721Receiver, IERC721e {
     uint256 public floorPrice;
 
     address userContract;
+    address marketplaceContract;
 
     modifier onlyOwner() {
         require(msg.sender == owner, "ERC721e: You're not the owner");
@@ -26,9 +27,11 @@ contract ERC721e is ERC721, IERC721Receiver, IERC721e {
     constructor(
         string memory _name,
         string memory _symbol,
-        address _userContract
+        address _userContract,
+        address _marketplaceContract
     ) ERC721(_name, _symbol) {
         userContract = _userContract;
+        marketplaceContract = _marketplaceContract;
     }
 
     function setFloorPrice(uint256 _floorPrice) public onlyOwner {
@@ -83,6 +86,10 @@ contract ERC721e is ERC721, IERC721Receiver, IERC721e {
 
         IUser(userContract).addNft(msg.sender, address(this), tokenCount);
 
+        setApprovalForAll(marketplaceContract, true);
+
+        token.contractAddress = address(this);
+
         emit Transfer(address(0), msg.sender, tokenCount);
 
         return tokenCount;
@@ -95,6 +102,28 @@ contract ERC721e is ERC721, IERC721Receiver, IERC721e {
     ) public {
         transferFrom(_from, _to, _tokenId);
         IUser(userContract).addNft(_to, address(this), _tokenId);
+    }
+
+    function putOnSale(uint256 _tokenId, uint256 _marketItemId) public {
+        address _owner = ownerOf(_tokenId);
+        require(
+            _isAuthorized(_owner, _tokenId),
+            "ERC721: You're not authorized"
+        );
+        NFT storage nft = _tokens[_tokenId];
+        nft.onSale = true;
+        nft.marketItemId = _marketItemId;
+    }
+
+    function createSale(uint256 _tokenId) public {
+        address _owner = ownerOf(_tokenId);
+        require(
+            _isAuthorized(_owner, _tokenId),
+            "ERC721: You're not authorized"
+        );
+        NFT storage nft = _tokens[_tokenId];
+        nft.onSale = false;
+        nft.marketItemId = 0;
     }
 
     function getTokensList() public view returns (NFT[] memory) {

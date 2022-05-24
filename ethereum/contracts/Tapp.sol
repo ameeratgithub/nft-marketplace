@@ -7,12 +7,10 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 contract Tapp is ERC20, Ownable {
     uint256 public currentBalanceLimit = 4000 * 10**18;
 
-    address private _marketPlace;
+    address public marketPlace;
 
-    constructor() ERC20("Tapp", "TAP") {}
-
-    function setMarketPlace(address marketPlace_) external onlyOwner {
-        _marketPlace = marketPlace_;
+    constructor(address _marketPlace) ERC20("Tapp", "TAP") {
+        marketPlace = _marketPlace;
     }
 
     function mint(uint256 _amount) external {
@@ -22,8 +20,7 @@ contract Tapp is ERC20, Ownable {
         );
 
         _mint(msg.sender, _amount);
-
-        if (_marketPlace != address(0))
-            _approve(msg.sender, _marketPlace, _amount);
+        
+        _approve(msg.sender, marketPlace, _amount);
     }
 }

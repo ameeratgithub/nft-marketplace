@@ -10,7 +10,6 @@ contract ERC721 is IERC721, IERC721MetaData, ERC165 {
     string public name;
     string public symbol;
 
-
     uint256 public tokenCount;
 
     mapping(address => uint256) internal _balances;
@@ -22,7 +21,6 @@ contract ERC721 is IERC721, IERC721MetaData, ERC165 {
     // mapping(uint256 => string) internal _tokenURIs;
 
     mapping(uint256 => address) private _singleApproval;
-
 
     constructor(string memory _name, string memory _symbol) {
         name = _name;
@@ -91,9 +89,7 @@ contract ERC721 is IERC721, IERC721MetaData, ERC165 {
     ) public {
         address owner = ownerOf(_tokenId);
         require(
-            msg.sender == owner ||
-                msg.sender == getApproved(_tokenId) ||
-                isApprovedForAll(owner, msg.sender),
+            _isAuthorized(owner, _tokenId),
             "ERC721::transferFrom:You're not authorized"
         );
         require(_from == owner, "ERC721::transferFrom:Invalid source");
@@ -107,6 +103,7 @@ contract ERC721 is IERC721, IERC721MetaData, ERC165 {
 
         emit Transfer(_from, _to, _tokenId);
     }
+
 
     function safeTransferFrom(
         address _from,
@@ -170,5 +167,16 @@ contract ERC721 is IERC721, IERC721MetaData, ERC165 {
         return
             _interfaceId == type(IERC721).interfaceId ||
             super.supportsInterface(_interfaceId);
+    }
+
+    function _isAuthorized(address owner, uint256 _tokenId)
+        internal
+        view
+        returns (bool)
+    {
+        return
+            msg.sender == owner ||
+            msg.sender == getApproved(_tokenId) ||
+            isApprovedForAll(owner, msg.sender);
     }
 }
