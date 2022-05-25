@@ -31,4 +31,12 @@ interface IERC721e is IERC721 {
     function putOnSale(uint256 _tokenId, uint256 _marketItemId) external;
 
     function createSale(uint256 _tokenId) external;
+
+    function createOffer(
+        uint256 _tokenId,
+        uint256 _offerId,
+        address _offeror
+    ) external;
+
+    function deleteOffer(uint256 _tokenId, uint256 _offerId) external;
 }

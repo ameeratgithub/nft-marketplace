@@ -4,8 +4,6 @@ import "./ERC721e.sol";
 import "../interfaces/IERC721le.sol";
 
 contract ERC721le is ERC721e, IERC721le {
-    
-
     uint256 public lazyTokenCount;
 
     mapping(uint256 => LazyNFT) public lazyTokens;
@@ -24,10 +22,19 @@ contract ERC721le is ERC721e, IERC721le {
         string memory _name,
         string memory _symbol,
         address _tapp,
-        address _owner, 
+        address _owner,
         address _userContract,
-        address _marketplaceContract
-    ) ERC721e(_name, _symbol, _userContract, _marketplaceContract) {
+        address _marketplaceContract,
+        address _offersContract
+    )
+        ERC721e(
+            _name,
+            _symbol,
+            _userContract,
+            _marketplaceContract,
+            _offersContract
+        )
+    {
         owner = _owner;
         tapp = IERC20(_tapp);
     }
@@ -58,12 +65,11 @@ contract ERC721le is ERC721e, IERC721le {
     function getAllLazyTokens() public view returns (LazyNFT[] memory) {
         LazyNFT[] memory tokens = new LazyNFT[](lazyTokenCount);
         for (uint256 i; i < lazyTokenCount; i++) {
-            tokens[i] = lazyTokens[i+1];
+            tokens[i] = lazyTokens[i + 1];
         }
 
         return tokens;
     }
-
 
     function addLazyTokens(string[] calldata _uris, uint256[] calldata _prices)
         public

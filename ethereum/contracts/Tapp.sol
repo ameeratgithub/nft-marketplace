@@ -8,9 +8,13 @@ contract Tapp is ERC20, Ownable {
     uint256 public currentBalanceLimit = 4000 * 10**18;
 
     address public marketPlace;
+    address public offersContract;
 
-    constructor(address _marketPlace) ERC20("Tapp", "TAP") {
+    constructor(address _marketPlace, address _offersContract)
+        ERC20("Tapp", "TAP")
+    {
         marketPlace = _marketPlace;
+        offersContract = _offersContract;
     }
 
     function mint(uint256 _amount) external {
@@ -20,7 +24,8 @@ contract Tapp is ERC20, Ownable {
         );
 
         _mint(msg.sender, _amount);
-        
+
         _approve(msg.sender, marketPlace, _amount);
+        _approve(msg.sender, offersContract, _amount);
     }
 }

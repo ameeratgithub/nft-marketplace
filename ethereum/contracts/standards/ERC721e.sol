@@ -16,8 +16,12 @@ contract ERC721e is ERC721, IERC721Receiver, IERC721e {
 
     uint256 public floorPrice;
 
+    // TokenId->OfferId->Index of OfferId in Nft.offers array
+    mapping(uint256 => mapping(uint256 => uint256)) private _offersIndex;
+
     address userContract;
     address marketplaceContract;
+    address offersContract;
 
     modifier onlyOwner() {
         require(msg.sender == owner, "ERC721e: You're not the owner");
@@ -28,10 +32,12 @@ contract ERC721e is ERC721, IERC721Receiver, IERC721e {
         string memory _name,
         string memory _symbol,
         address _userContract,
-        address _marketplaceContract
+        address _marketplaceContract,
+        address _offersContract
     ) ERC721(_name, _symbol) {
         userContract = _userContract;
         marketplaceContract = _marketplaceContract;
+        offersContract = _offersContract;
     }
 
     function setFloorPrice(uint256 _floorPrice) public onlyOwner {
@@ -87,6 +93,7 @@ contract ERC721e is ERC721, IERC721Receiver, IERC721e {
         IUser(userContract).addNft(msg.sender, address(this), tokenCount);
 
         setApprovalForAll(marketplaceContract, true);
+        setApprovalForAll(offersContract, true);
 
         token.contractAddress = address(this);
 
@@ -124,6 +131,37 @@ contract ERC721e is ERC721, IERC721Receiver, IERC721e {
         NFT storage nft = _tokens[_tokenId];
         nft.onSale = false;
         nft.marketItemId = 0;
+    }
+
+    function createOffer(
+        uint256 _tokenId,
+        uint256 _offerId,
+        address _offeror
+    ) public {
+        address _owner = ownerOf(_tokenId);
+        require(_owner != address(0), "ERC721e: Token doesn't exist");
+        require(_offeror != address(0), "ERC721e: Invalid offeror");
+        require(
+            _owner != _offeror,
+            "ERC721e: You can't create offers for yourself"
+        );
+        NFT storage nft = _tokens[_tokenId];
+        _offersIndex[_tokenId][_offerId] = nft.offers.length;
+        nft.offers.push(_offerId);
+    }
+
+    function deleteOffer(uint256 _tokenId, uint256 _offerId) public {
+        address _owner = ownerOf(_tokenId);
+        require(_owner != address(0), "ERC721e: Token doesn't exist");
+        require(
+            _isAuthorized(_owner, _tokenId),
+            "ERC721: You can't complete offer"
+        );
+
+        NFT storage nft = _tokens[_tokenId];
+        uint256 index = _offersIndex[_tokenId][_offerId];
+        nft.offers[index] = nft.offers[nft.offers.length - 1];
+        nft.offers.pop();
     }
 
     function getTokensList() public view returns (NFT[] memory) {
