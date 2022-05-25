@@ -9,10 +9,9 @@ import "./interfaces/IERC1155.sol";
 import "./interfaces/IERC1155MetaData.sol";
 import "./interfaces/IUser.sol";
 import "./standards/ERC721le.sol";
-import "./Utils.sol";
 
 contract Collections {
-    using Utils for string;
+    
     event CollectionAdded(address indexed _collection, address indexed _owner);
 
     event CollectionCreated(
@@ -43,15 +42,24 @@ contract Collections {
     address private _tapp;
 
     address public userContract;
+    address public marketplaceContract;
+    address public offersContract;
 
     modifier validCollection(uint256 _id) {
         require(_id > 0 && _id <= collectionCount, "Collections: Invalid id");
         _;
     }
 
-    constructor(address tapp_, address _userContract) {
+    constructor(
+        address tapp_,
+        address _userContract,
+        address _marketplaceContract,
+        address _offersContract
+    ) {
         _tapp = tapp_;
         userContract = _userContract;
+        marketplaceContract = _marketplaceContract;
+        offersContract = _offersContract;
     }
 
     function updateCollectionBanner(uint256 _id, string calldata _bannerUri)
@@ -195,7 +203,15 @@ contract Collections {
         return
             abi.encodePacked(
                 byteCode,
-                abi.encode(_name, _symbol, _tapp, msg.sender, userContract)
+                abi.encode(
+                    _name,
+                    _symbol,
+                    _tapp,
+                    msg.sender,
+                    userContract,
+                    marketplaceContract,
+                    offersContract
+                )
             );
     }
 

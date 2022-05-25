@@ -8,6 +8,7 @@ import "../standards/ERC721.sol";
 import "../interfaces/IERC721Receiver.sol";
 import "../interfaces/IERC721e.sol";
 import "../interfaces/IUser.sol";
+import "hardhat/console.sol";
 
 contract ERC721e is ERC721, IERC721Receiver, IERC721e {
     using Strings for uint256;
@@ -139,7 +140,6 @@ contract ERC721e is ERC721, IERC721Receiver, IERC721e {
         address _offeror
     ) public {
         address _owner = ownerOf(_tokenId);
-        require(_owner != address(0), "ERC721e: Token doesn't exist");
         require(_offeror != address(0), "ERC721e: Invalid offeror");
         require(
             _owner != _offeror,
@@ -152,7 +152,6 @@ contract ERC721e is ERC721, IERC721Receiver, IERC721e {
 
     function deleteOffer(uint256 _tokenId, uint256 _offerId) public {
         address _owner = ownerOf(_tokenId);
-        require(_owner != address(0), "ERC721e: Token doesn't exist");
         require(
             _isAuthorized(_owner, _tokenId),
             "ERC721: You can't complete offer"
@@ -161,8 +160,11 @@ contract ERC721e is ERC721, IERC721Receiver, IERC721e {
         NFT storage nft = _tokens[_tokenId];
         uint256 index = _offersIndex[_tokenId][_offerId];
         nft.offers[index] = nft.offers[nft.offers.length - 1];
+        _offersIndex[nft.id][nft.offers[index]] = index;
         nft.offers.pop();
     }
+
+    
 
     function getTokensList() public view returns (NFT[] memory) {
         NFT[] memory tokens = new NFT[](tokenCount);

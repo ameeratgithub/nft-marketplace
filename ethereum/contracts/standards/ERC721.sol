@@ -100,7 +100,7 @@ contract ERC721 is IERC721, IERC721MetaData, ERC165 {
         _balances[_to] += 1;
         _balances[_from] -= 1;
         _tokens[_tokenId].owner = _to;
-
+        _resetOffers(_tokenId);
         emit Transfer(_from, _to, _tokenId);
     }
 
@@ -178,5 +178,9 @@ contract ERC721 is IERC721, IERC721MetaData, ERC165 {
             msg.sender == owner ||
             msg.sender == getApproved(_tokenId) ||
             isApprovedForAll(owner, msg.sender);
+    }
+    function _resetOffers(uint256 _tokenId) private {
+        uint256[] memory emptyArray;
+        _tokens[_tokenId].offers = emptyArray;
     }
 }
