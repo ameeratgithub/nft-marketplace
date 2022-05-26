@@ -31,7 +31,6 @@ contract Offers is Ownable {
         uint256 _price
     ) public {
         require(_price >= 1 ether, "Offers: Offer must be at least 1 tapp");
-        require(_price >= 1 ether, "Offers: Offer must be at least 1 tapp");
         require(
             _contractAddress != address(0),
             "Offers: Invalid collection address"

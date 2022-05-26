@@ -23,6 +23,7 @@ contract ERC721e is ERC721, IERC721Receiver, IERC721e {
     address userContract;
     address marketplaceContract;
     address offersContract;
+    address auctionsContract;
 
     modifier onlyOwner() {
         require(msg.sender == owner, "ERC721e: You're not the owner");
@@ -34,11 +35,13 @@ contract ERC721e is ERC721, IERC721Receiver, IERC721e {
         string memory _symbol,
         address _userContract,
         address _marketplaceContract,
-        address _offersContract
+        address _offersContract,
+        address _auctionsContract
     ) ERC721(_name, _symbol) {
         userContract = _userContract;
         marketplaceContract = _marketplaceContract;
         offersContract = _offersContract;
+        auctionsContract = _auctionsContract;
     }
 
     function setFloorPrice(uint256 _floorPrice) public onlyOwner {
@@ -95,6 +98,7 @@ contract ERC721e is ERC721, IERC721Receiver, IERC721e {
 
         setApprovalForAll(marketplaceContract, true);
         setApprovalForAll(offersContract, true);
+        setApprovalForAll(auctionsContract, true);
 
         token.contractAddress = address(this);
 
@@ -154,7 +158,7 @@ contract ERC721e is ERC721, IERC721Receiver, IERC721e {
         address _owner = ownerOf(_tokenId);
         require(
             _isAuthorized(_owner, _tokenId),
-            "ERC721: You can't complete offer"
+            "ERC721: You can't delete offer"
         );
 
         NFT storage nft = _tokens[_tokenId];
@@ -164,7 +168,26 @@ contract ERC721e is ERC721, IERC721Receiver, IERC721e {
         nft.offers.pop();
     }
 
-    
+    function setAuction(uint _tokenId, uint _auctionId) public{
+        address _owner = ownerOf(_tokenId);
+        require(
+            _isAuthorized(_owner, _tokenId),
+            "ERC721: You can't set auction"
+        );
+        require(
+            _auctionId!=0,
+            "ERC721: Invalid Auction Id"
+        );
+        _tokens[_tokenId].auctionId=_auctionId;
+    }
+    function resetAuction(uint _tokenId) public{
+        address _owner = ownerOf(_tokenId);
+        require(
+            _isAuthorized(_owner, _tokenId),
+            "ERC721: You can't reset auction"
+        );
+        _tokens[_tokenId].auctionId=0;
+    }
 
     function getTokensList() public view returns (NFT[] memory) {
         NFT[] memory tokens = new NFT[](tokenCount);

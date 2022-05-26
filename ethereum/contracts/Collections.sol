@@ -11,7 +11,6 @@ import "./interfaces/IUser.sol";
 import "./standards/ERC721le.sol";
 
 contract Collections {
-    
     event CollectionAdded(address indexed _collection, address indexed _owner);
 
     event CollectionCreated(
@@ -44,6 +43,7 @@ contract Collections {
     address public userContract;
     address public marketplaceContract;
     address public offersContract;
+    address public auctionsContract;
 
     modifier validCollection(uint256 _id) {
         require(_id > 0 && _id <= collectionCount, "Collections: Invalid id");
@@ -54,12 +54,14 @@ contract Collections {
         address tapp_,
         address _userContract,
         address _marketplaceContract,
-        address _offersContract
+        address _offersContract,
+        address _auctionsContract
     ) {
         _tapp = tapp_;
         userContract = _userContract;
         marketplaceContract = _marketplaceContract;
         offersContract = _offersContract;
+        auctionsContract = _auctionsContract;
     }
 
     function updateCollectionBanner(uint256 _id, string calldata _bannerUri)
@@ -210,7 +212,8 @@ contract Collections {
                     msg.sender,
                     userContract,
                     marketplaceContract,
-                    offersContract
+                    offersContract,
+                    auctionsContract
                 )
             );
     }

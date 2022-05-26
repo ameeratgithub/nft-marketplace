@@ -8,7 +8,8 @@ contract Monuments is ERC721le {
         address _tapp,
         address _userContract,
         address _marketplaceContract,
-        address _offersContract
+        address _offersContract,
+        address _auctionsContract
     )
         ERC721le(
             "Monument Valley",
@@ -17,7 +18,8 @@ contract Monuments is ERC721le {
             msg.sender,
             _userContract,
             _marketplaceContract,
-            _offersContract
+            _offersContract,
+            _auctionsContract
         )
     {}
 }

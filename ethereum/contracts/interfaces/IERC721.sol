@@ -3,20 +3,17 @@
 pragma solidity ^0.8.9;
 
 interface IERC721 {
-    struct Offer {
-        uint256 id;
-        uint256 cancelled;
-        uint256 declined;
-    }
     struct NFT {
         uint256 id;
         uint256 marketItemId;
+        uint auctionId;
         address contractAddress;
         address owner;
         address creator;
         string uri;
         bool onSale;
         uint256[] offers;
+
     }
 
     event Transfer(

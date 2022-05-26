@@ -25,14 +25,16 @@ contract ERC721le is ERC721e, IERC721le {
         address _owner,
         address _userContract,
         address _marketplaceContract,
-        address _offersContract
+        address _offersContract,
+        address _auctionsContract
     )
         ERC721e(
             _name,
             _symbol,
             _userContract,
             _marketplaceContract,
-            _offersContract
+            _offersContract,
+            _auctionsContract
         )
     {
         owner = _owner;
