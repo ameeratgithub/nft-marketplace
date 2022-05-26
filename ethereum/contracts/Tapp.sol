@@ -7,14 +7,39 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 contract Tapp is ERC20, Ownable {
     uint256 public currentBalanceLimit = 4000 * 10**18;
 
-    address public marketPlace;
-    address public offersContract;
+    address public marketPlaceAddress;
+    address public offersAddress;
+    address public auctionsAddress;
 
-    constructor(address _marketPlace, address _offersContract)
-        ERC20("Tapp", "TAP")
+    modifier validAddress(address _address) {
+        require(_address != address(0), "Tapp: Invalid Address");
+        _;
+    }
+
+    constructor() ERC20("Tapp", "TAP") {}
+
+    function setMarketplaceAddress(address _address)
+        public
+        onlyOwner
+        validAddress(_address)
     {
-        marketPlace = _marketPlace;
-        offersContract = _offersContract;
+        marketPlaceAddress = _address;
+    }
+
+    function setOffersAddress(address _address)
+        public
+        onlyOwner
+        validAddress(_address)
+    {
+        offersAddress = _address;
+    }
+
+    function setAuctionsAddress(address _address)
+        public
+        onlyOwner
+        validAddress(_address)
+    {
+        auctionsAddress = _address;
     }
 
     function mint(uint256 _amount) external {
@@ -25,7 +50,11 @@ contract Tapp is ERC20, Ownable {
 
         _mint(msg.sender, _amount);
 
-        _approve(msg.sender, marketPlace, _amount);
-        _approve(msg.sender, offersContract, _amount);
+        if (marketPlaceAddress != address(0))
+            _approve(msg.sender, marketPlaceAddress, _amount);
+        if (offersAddress != address(0))
+            _approve(msg.sender, offersAddress, _amount);
+        if (auctionsAddress != address(0))
+            _approve(msg.sender, auctionsAddress, _amount);
     }
 }
