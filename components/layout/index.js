@@ -24,7 +24,7 @@ export default function ({ children }) {
     const showConnectionMessage = async () => {
 
         const account = await loadAccount()
-        console.log(account)
+    
         if (!account?.address && !isOpen) {
             setIsOpen(true)
         }

@@ -6,15 +6,16 @@ import { Web3Storage } from "web3.storage"
 import { lazyAdd, mint } from "../../apis/collection"
 import { _w } from "../../utils/ethers"
 import { useWeb3 } from "../../utils/web3-context"
+import { MintingPaper } from "../collections/CreateCollectionForm"
 import Alert from "../common/Alert"
 
-const MintingPaper = styled(Paper)({
-    position: 'absolute',
-    top: '15%',
-    left: '25%',
-    padding: '20px 30px',
-    width: '50%'
-})
+// const MintingPaper = styled(Paper)({
+//     position: 'absolute',
+//     top: '15%',
+//     left: '25%',
+//     padding: '20px 30px',
+//     width: '50%'
+// })
 
 export default ({ web3StorageKey, collectionAddress, onSuccess }) => {
 
@@ -96,7 +97,6 @@ export default ({ web3StorageKey, collectionAddress, onSuccess }) => {
             setButtonLoading(true)
             const f = new File([JSON.stringify({ name, description, image })],
                 "metadata.json", { type: 'application/json', lastModified: Date.now() })
-            console.log(f)
             const rootCID = await client.put([f], { maxRetries: 2 })
             console.log("Metadata saved with hash", rootCID);
 

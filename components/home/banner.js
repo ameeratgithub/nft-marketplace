@@ -17,14 +17,14 @@ const Banner = () => {
                     variant="h4"
                     sx={{ mb: '10px' }}
                 >
-                    Multi Dapp
+                    NFT Marketplace
                 </Typography>
                 <Divider />
                 <Typography
                     variant="p"
                     sx={{ mt: '20px', lineHeight: '1.6' }}
                 >
-                    Explore multiple dapps, inter-connected to each other, demonstrating potential of blockchain
+                    Explore dynamic collection creation and dynamic NFT minting without code, demonstrating potential of blockchain
                 </Typography>
                 <Container sx={{ display: 'flex', justifyContent: 'space-between', mt: '30px' }}>
                     {address ? <Link href={`/faucet`} passHref>

@@ -2,6 +2,7 @@ import { LoadingButton } from "@mui/lab"
 import { Button, Chip, Container, Divider, TextField, Typography } from "@mui/material"
 import { useEffect, useState } from "react"
 import { getLimit, getUserBalance, mint } from "../apis/tapp"
+import ConnectWallet from "../components/common/ConnectWallet"
 import Link from 'next/link'
 import Layout from "../components/layout"
 import { _e, _w } from "../utils/ethers"
@@ -9,27 +10,13 @@ import { useWeb3 } from "../utils/web3-context"
 import { useDappProvider, useUpdatedDappProvider } from "../utils/providers"
 
 export default ({ }) => {
-    // const [balance, setBalance] = useState(0)
-    // const [limit, setLimit] = useState(0)
     const [amount, setAmount] = useState('')
     const [loading, setLoading] = useState(false)
 
     const { signer, address } = useWeb3()
     const { tapp: { balance, limit } } = useDappProvider()
     const { loadTappData } = useUpdatedDappProvider()
-    useEffect(() => {
-        // if (address) loadBalance()
-    }, [address])
 
-    const loadBalance = async () => {
-        // const [_b, _l] = await Promise.all([
-        //     getUserBalance(address, signer),
-        //     getLimit(signer)
-        // ])
-
-        // setBalance(_e(_b))
-        // setLimit(_e(_l) - _e(_b))
-    }
 
     const _mint = async () => {
         if (Number(amount) > limit || Number(amount) <= 0) return
@@ -42,8 +29,8 @@ export default ({ }) => {
         loadTappData()
     }
     return <Layout>
-        <Container sx={{ display: 'flex', mt: '80px' }}>
-
+        { !address && <ConnectWallet withWrapper={true}/>}
+        { address &&<Container sx={{ display: 'flex', mt: '80px' }}>
             <Container sx={{ width: '40%' }}>
                 <Typography variant="h5" sx={{ mb: '10px' }}>Current Balance</Typography>
                 <Chip label={` ${balance} Tapps `} sx={{ mb: '10px', fontSize: '15px', fontWeight: 'bold' }} />
@@ -76,7 +63,7 @@ export default ({ }) => {
                 </LoadingButton>
             </Container>
 
-        </Container>
+        </Container>}
     </Layout>
 }
 

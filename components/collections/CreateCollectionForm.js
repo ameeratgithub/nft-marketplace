@@ -1,5 +1,5 @@
 import { LoadingButton } from "@mui/lab"
-import { Button, FormControl, FormControlLabel, FormGroup, InputLabel, MenuItem, Paper, Select, Stack, Switch, TextField, Typography } from "@mui/material"
+import { Button, FormControl, InputLabel, MenuItem, Paper, Select, Stack, Switch, TextField, Typography } from "@mui/material"
 import { styled } from "@mui/system"
 import { useState } from "react"
 import { Web3Storage } from "web3.storage"
@@ -8,7 +8,7 @@ import { _w } from "../../utils/ethers"
 import { useWeb3 } from "../../utils/web3-context"
 import Alert from "../common/Alert"
 
-const MintingPaper = styled(Paper)({
+export const MintingPaper = styled(Paper)({
     position: 'absolute',
     top: '15%',
     left: '25%',
@@ -21,7 +21,7 @@ export default ({ web3StorageKey, onSuccess }) => {
     const client = new Web3Storage({ token: web3StorageKey })
     const ipfsGateway = process.env.NEXT_PUBLIC_IPFS_GATEWAY
 
-    const { signer, address } = useWeb3()
+    const { signer } = useWeb3()
 
     const [isSnackbarOpen, setIsSnackbarOpen] = useState(false)
     const [alert, setAlert] = useState({})
@@ -89,7 +89,6 @@ export default ({ web3StorageKey, onSuccess }) => {
         setIsSnackbarOpen(false)
     }
     const addCollection = async () => {
-        console.log(type)
         if (!name || !description || !symbol) return showAlert({ message: 'Please provide all fields', type: 'warning' });
         if (!bannerUri) return showAlert({ message: 'Please choose a banner', type: 'warning' });
         try {

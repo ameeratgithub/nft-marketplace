@@ -153,13 +153,9 @@ export default ({ web3StorageKey }) => {
 
         const filteredResults = _filterResults(collections, results)
 
-        console.log("Filtered Results:", filteredResults)
-
         const tokenPromises = filteredResults.map(c => tokensByIds721(c.tokens, c.collection, signer))
 
         const nfts = await Promise.all(tokenPromises)
-
-        console.log(nfts)
 
         setTokens(...nfts)
 

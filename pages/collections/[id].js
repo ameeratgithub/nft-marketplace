@@ -88,8 +88,9 @@ export default ({ web3StorageKey }) => {
         setSort(_sort)
     }
     const handleOnSuccess = () => {
-        loadTokens()
         setOpenMintingModal(false)
+        loadTokens()
+        
     }
 
     const CollectionStack = <Stack>

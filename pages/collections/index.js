@@ -22,33 +22,39 @@ export default ({ web3StorageKey }) => {
         setCollections(_collections)
     }
     return <Layout>
-        <Modal open={openCreateModal} onClose={() => setOpenCreateModal(false)}>
-            <div>
-                <CreateCollectionForm onSuccess={() => {
-                    setOpenCreateModal(false)
-                    loadCollections()
-                }} web3StorageKey={web3StorageKey} />
-            </div>
-        </Modal>
-        <Grid container direction="row" spacing={3} sx={{ mt: '1px' }} justifyContent="space-between">
-            <Grid item><Typography variant="h5">Collections</Typography></Grid>
-            <Grid item >
-                <Grid container direction="row" spacing={3}>
-                    <Grid item><Button variant="contained" onClick={() => setOpenCreateModal(true)}>
-                        Create
-                    </Button>
+        {
+        !address && <ConnectWallet withWrapper={true} />}
+        {
+            address && <>
+                <Modal open={openCreateModal} onClose={() => setOpenCreateModal(false)}>
+                    <div>
+                        <CreateCollectionForm onSuccess={() => {
+                            setOpenCreateModal(false)
+                            loadCollections()
+                        }} web3StorageKey={web3StorageKey} />
+                    </div>
+                </Modal>
+                <Grid container direction="row" spacing={3} sx={{ mt: '1px' }} justifyContent="space-between">
+                    <Grid item><Typography variant="h5">Collections</Typography></Grid>
+                    <Grid item >
+                        <Grid container direction="row" spacing={3}>
+                            <Grid item><Button variant="contained" onClick={() => setOpenCreateModal(true)}>
+                                Create
+                            </Button>
+                            </Grid>
+                            {/* <Grid item><Button variant="contained" color="success">Add</Button></Grid> */}
+                        </Grid>
                     </Grid>
-                    {/* <Grid item><Button variant="contained" color="success">Add</Button></Grid> */}
                 </Grid>
-            </Grid>
-        </Grid>
-        <Grid container direction="row" spacing={4} sx={{ mt: '30px', mb:'30px' }}>
-            {
-                address ? collections.map((c, i) => <Grid item md={4} key={i}>
-                    <CollectionCard  collection={c} /></Grid>)
-                    : !loading && <ConnectWallet withWrapper={true} />
-            }
-        </Grid>
+                <Grid container direction="row" spacing={4} sx={{ mt: '30px', mb: '30px' }}>
+                    {
+                        collections.map((c, i) => <Grid item md={4} key={i}>
+                            <CollectionCard collection={c} /></Grid>)
+
+                    }
+                </Grid>
+            </>
+        }
     </Layout>
 }
 

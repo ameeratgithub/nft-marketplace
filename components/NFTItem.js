@@ -1,5 +1,5 @@
-import { FavoriteBorder } from "@mui/icons-material"
-import { Button, Chip, Grid, IconButton, LinearProgress, Paper, Stack, Typography } from "@mui/material"
+
+import { Button, Chip, Grid, LinearProgress, Modal, Paper, Stack, Typography } from "@mui/material"
 import { styled } from "@mui/system"
 import Link from "next/link"
 
@@ -12,6 +12,7 @@ import { loadMetadata } from "../utils/ipfs"
 import { useDappProvider } from "../utils/providers"
 import { useWeb3 } from "../utils/web3-context"
 import Alert from "./common/Alert"
+import CreateSaleForm from "./common/CreateSaleForm"
 
 
 
@@ -51,9 +52,12 @@ export default ({ nft, collectionAddress, onMint }) => {
     const [alert, setAlert] = useState({})
     const { tapp: { balance } } = useDappProvider()
 
+    const [isSaleModalOpen, setIsSaleModalOpen] = useState(false)
+
     useEffect(() => {
         fetchNftMetaData()
         if (address && nft.owner) fetchUserProfile()
+
     }, [address])
     const fetchUserProfile = async () => {
         const p = await getUserProfile(nft.owner, signer)
@@ -97,41 +101,88 @@ export default ({ nft, collectionAddress, onMint }) => {
         currentTarget.onerror = null
         currentTarget.src = fallBackImage
     }
-    return <Stack sx={{ position: 'relative' }}>
-        <Alert onClose={handleClose} isOpen={isSnackbarOpen} message={alert.message} type={alert.type} />
-        <NFTImage src={nftMeta.image || fallBackImage} alt={nftMeta.name} sx={{ boxShadow: 4 }}
-            onError={onImageError} />
-        <Paper sx={{ padding: '15px', position: 'relative', left: "10px", top: '-10px' }} elevation={5}>
-            <Stack sx={{ padding: '2px', pt: '15px' }}>
-                <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between">
-                    <Typography variant="subtitle1" >{nftMeta?.name || 'Metadata Loading'}</Typography>
-                    {nft.price && <Chip label={_e(nft.price)} size="small" />}
+    const fetchItemAction = () => {
+        if (profile?.id) {
+            if (nft.owner == address) {
+                if (nft.marketItemId.toString() !== "0") {
+                    return <Button variant="contained" size="small" sx={{ width: '100%' }}>
+                        Cancel Sell
+                    </Button>
+                } else if (nft.auctionId.toString() !== "0") {
+                    return <Button variant="contained" size="small" sx={{ width: '100%' }}>
+                        Cancel Auction
+                    </Button>
+                } else {
+                    return <Button variant="contained" onClick={() => setIsSaleModalOpen(true)} size="small" sx={{ width: '100%' }}>
+                        Sell
+                    </Button>
+                }
+            } else {
+                if (nft.marketItemId.toString() !== "0") {
+                    return <Button variant="contained" size="small" sx={{ width: '100%' }}>
+                        Buy
+                    </Button>
+                } else if (nft.auctionId.toString() !== "0") {
+                    return <Button variant="contained" size="small" sx={{ width: '100%' }}>
+                        Place Bid
+                    </Button>
+                } else {
+                    return <Button variant="contained" size="small" sx={{ width: '100%' }}>
+                        Create Offer
+                    </Button>
+                }
+            }
+
+        } else if (!nft.minted && !nft.owner) {
+            return <Button variant="contained" size="small" onClick={mintLazy} sx={{ width: '100%' }}>
+                Mint
+            </Button>
+        }
+
+    }
+    const handleOnSuccess=()=>{
+        setIsSaleModalOpen(false)
+        onMint()
+    }
+
+    return <>
+        <Modal open={isSaleModalOpen} onClose={() => setIsSaleModalOpen(false)}>
+            <div>
+                <CreateSaleForm nft={nft} onSuccess={handleOnSuccess}/>
+            </div>
+        </Modal>
+        <Stack sx={{ position: 'relative' }}>
+            <Alert onClose={handleClose} isOpen={isSnackbarOpen} message={alert.message} type={alert.type} />
+
+            <NFTImage src={nftMeta.image || fallBackImage} alt={nftMeta.name} sx={{ boxShadow: 4 }}
+                onError={onImageError} />
+            <Paper sx={{ padding: '15px', position: 'relative', left: "10px", top: '-10px' }} elevation={5}>
+                <Stack sx={{ padding: '2px', pt: '15px' }}>
+                    <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between">
+                        <Typography variant="subtitle1" >{nftMeta?.name || 'Metadata Loading'}</Typography>
+                        {nft.price && <Chip label={_e(nft.price)} size="small" />}
+                    </Stack>
+
+                    <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between"
+                        sx={{ mt: '10px' }}>
+                        {/* {nft.owner && profile.id && <NFTUserProfile profile={profile} onImageError={onImageError} />} */}
+                        {
+                            fetchItemAction()
+                        }
+                    </Stack>
+
                 </Stack>
+            </Paper>
+        </Stack></>
 
-                {/* <Typography variant="body2" sx={{ mt: '10px', mb: '10px' }}>{nftMeta.description}</Typography> */}
-                {/* {nftMeta.attributes.map(
-                    a => a.type == "bar" && <AttributeBar value={a.value} title={a.title} key={a.title} />
-                )} */}
-                <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between"
-                    sx={{ mt: '10px' }}>
-                    {
-                        !nft.minted && !nft.owner && <Button variant="contained" size="small" onClick={mintLazy} sx={{ width: '100%' }}>
-                            Mint
-                        </Button>
-                    }
-                    {
-                        nft.owner && profile?.id && <Link href={`/users/${profile.id}`} passHref>
-                            <a style={{ display: 'flex', color: 'inherit', textDecoration: 'none', alignItems: 'center' }}>
-                                <ProfileImage src={profile.picture} alt={profile.name || profile.userAddress}
-                                    onError={onImageError} />
-                                <Typography variant="body2" style={{ marginLeft: '10px' }}>{profile.name || `User#${profile.id}`}</Typography>
-                            </a>
-                        </Link>
-                    }
-                </Stack>
+}
 
-            </Stack>
-        </Paper>
-    </Stack>
-
+const NFTUserProfile = ({ profile, onImageError }) => {
+    return <Link href={`/users/${profile.id}`} passHref>
+        <a style={{ display: 'flex', color: 'inherit', textDecoration: 'none', alignItems: 'center' }}>
+            <ProfileImage src={profile.picture} alt={profile.name || profile.userAddress}
+                onError={onImageError} />
+            <Typography variant="body2" style={{ marginLeft: '10px' }}>{profile.name || `User#${profile.id}`}</Typography>
+        </a>
+    </Link>
 }

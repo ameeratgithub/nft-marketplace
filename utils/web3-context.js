@@ -65,7 +65,7 @@ function switchNetwork() {
                 method: 'wallet_switchEthereumChain',
                 params: [{ chainId }]
             })
-            window.location.reload()
+            // window.location.reload()
             return true
         } catch (error) {
             if (error.code === 4902) {
@@ -83,7 +83,7 @@ function switchNetwork() {
                         blockExplorerUrls: ["https://mumbai.polygonscan.com/"]
                     }]
                 });
-                window.location.reload()
+                // window.location.reload()
                 return true
             }
             console.log("Failed to switch network")
@@ -107,6 +107,16 @@ export default ({ children }) => {
         let provider, signer
         if (window.ethereum) {
             provider = new ethers.providers.Web3Provider(window.ethereum, 'any')
+            window.ethereum.on('accountsChanged', (accounts) => {
+                loadAccount()
+            })
+            window.ethereum.on('chainChanged', function (chainId) {
+                const desiredChainId = getDesiredChainId()
+                if (chainId !== desiredChainId) {
+                    switchNetwork()
+                }
+                window.location.reload()
+            });
         } else {
             const item = localStorage.getItem("WEB3_CONNECT_CACHED_PROVIDER");
 
@@ -131,7 +141,9 @@ export default ({ children }) => {
             const { chainId } = await provider.getNetwork()
 
             const desiredChainId = getDesiredChainId()
-            if (chainId !== desiredChainId) return switchNetwork()
+            if (chainId !== desiredChainId) {
+                return switchNetwork()
+            }
 
             let profile = await getUserProfile(address, signer);
 

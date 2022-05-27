@@ -15,11 +15,10 @@ import NLink from 'next/link';
 import { Grid, Link } from '@mui/material'
 import { ProfileImage } from '../NFTItem';
 
-const pages = ['Faucet', 'Collections'];
+const pages = ['Faucet', 'Collections', 'Marketplace','Auctions'];
 
 const ResponsiveAppBar = ({ profile }) => {
 
-    console.log(profile)
 
     const fallBackImage = process.env.NEXT_PUBLIC_IMAGE_404
 
