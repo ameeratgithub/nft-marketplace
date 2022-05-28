@@ -1,5 +1,5 @@
 
-import { Button, Chip, Grid, LinearProgress, Modal, Paper, Stack, Typography } from "@mui/material"
+import { Button, Chip, Divider, Grid, IconButton, LinearProgress, Modal, Paper, Stack, TextField, Typography } from "@mui/material"
 import { styled } from "@mui/system"
 import Link from "next/link"
 import { LoadingButton } from "@mui/lab"
@@ -7,15 +7,20 @@ import { LoadingButton } from "@mui/lab"
 
 import { useEffect, useState } from "react"
 import { lazyMint } from "../apis/collection"
-import { getMarketplaceItem, cancelListing } from "../apis/marketplace"
+import { getMarketplaceItem, cancelListing, createSale } from "../apis/marketplace"
 import { approve } from "../apis/tapp"
 import { getUserProfile } from "../apis/user"
-import { _e } from "../utils/ethers"
+import { _e, _w } from "../utils/ethers"
 import { loadMetadata } from "../utils/ipfs"
 import { useDappProvider } from "../utils/providers"
 import { useWeb3 } from "../utils/web3-context"
 import Alert from "./common/Alert"
 import CreateSaleForm from "./common/CreateSaleForm"
+import { cancelAuction, getAuction, placeBid } from "../apis/auctions"
+import { InfoOutlined } from "@mui/icons-material"
+import { MintingPaper } from "./collections/CreateCollectionForm"
+import { ethers } from "ethers"
+import BiddingForm from "./auctions.js/BiddingForm"
 
 
 
@@ -51,13 +56,16 @@ export default ({ nft, collectionAddress, onMint }) => {
     const [nftMeta, setNftMeta] = useState({})
     const [profile, setProfile] = useState({})
     const [isSnackbarOpen, setIsSnackbarOpen] = useState(false)
-    const { signer, address } = useWeb3()
+    const { signer, address, provider } = useWeb3()
     const [alert, setAlert] = useState({})
     const { tapp: { balance } } = useDappProvider()
 
     const [marketItem, setMarketItem] = useState({})
+    const [auctionItem, setAuctionItem] = useState({})
 
     const [isSaleModalOpen, setIsSaleModalOpen] = useState(false)
+    const [isAuctionDetailsModalOpen, setIsAuctionDetailsModalOpen] = useState(false)
+    const [isBiddingModalOpen, setIsBiddingModalOpen] = useState(false)
 
     const [isButtonLoading, setIsButtonLoading] = useState(false)
 
@@ -72,8 +80,11 @@ export default ({ nft, collectionAddress, onMint }) => {
     const fetchSellingData = async () => {
         if (nft.marketItemId.toString() !== "0") {
             const item = await getMarketplaceItem(nft.marketItemId.toString(), signer)
-            console.log(item)
             setMarketItem(item)
+        }
+        if (nft.auctionId.toString() !== "0") {
+            const item = await getAuction(nft.auctionId.toString(), signer)
+            setAuctionItem(item)
         }
     }
     const fetchUserProfile = async () => {
@@ -131,43 +142,181 @@ export default ({ nft, collectionAddress, onMint }) => {
             showAlert(`Error occured while cancelling nft listing`, 'error')
         }
         setIsButtonLoading(false)
+    }
+    const cancelAuctionItem = async () => {
+        setIsButtonLoading(true)
+        if (!auctionItem.id) return
+        try {
+            const tx = await cancelAuction(auctionItem.id.toString(), signer)
+            await tx.wait(1)
+            showAlert(`NFT Auction cancelled`, 'info')
+            setIsButtonLoading(false)
+            onMint()
+        } catch (err) {
+            console.log(err)
+            showAlert(`Error occured while cancelling nft Auction`, 'error')
+            setIsButtonLoading(false)
+        }
 
+    }
+    const buyNFT = async () => {
+        if (!marketItem.id) return
+        if (Number(balance) < Number(_e(marketItem.price)))
+            return showAlert(`You need ${Number(_e(marketItem.price)) - Number(balance)} more tapps`, 'warning')
+
+        setIsButtonLoading(true)
+        try {
+            await createSale(marketItem.id.toString(), signer)
+            showAlert(`NFT purchased successfully`, 'info')
+            onMint()
+        } catch (err) {
+            console.log(err)
+            showAlert(`Error occured while buying nft`, 'error')
+        }
+        setIsButtonLoading(false)
     }
     const handleOnSuccess = async () => {
         setIsSaleModalOpen(false)
         await fetchSellingData()
         onMint()
     }
+    const AuctionDetails = () => {
+        const [sellerProfile, setSellerProfile] = useState({})
+        const [endTime, setEndTime] = useState(0)
+
+        const [bidders, setBidders] = useState([])
+
+        useEffect(() => {
+            intialize()
+        }, [])
+
+        const intialize = async () => {
+            const currentBlock = await provider.getBlockNumber()
+            const endBlock = Number(auctionItem.endBlock.toString())
+            if (currentBlock >= endBlock) {
+                setEndTime(0)
+            } else {
+                const minutes = ((endBlock - currentBlock) * 5) / 60
+                setEndTime(parseInt(minutes))
+            }
+            const profile = await getUserProfile(auctionItem.seller, signer)
+            setSellerProfile(profile)
+
+            const profilePromises = auctionItem.bids.map(b => getUserProfile(b.bidder, signer))
+            const profiles = await Promise.all(profilePromises)
+
+            console.log("Loaded profiles", profiles);
+            setBidders(profiles)
+        }
+
+        return <MintingPaper>
+            <Grid container direction="row" justifyContent="space-between">
+                <Grid item>
+                    <Typography variant="h6">
+                        Seller
+                    </Typography>
+                </Grid>
+                <Grid item>
+                    <NFTUserProfile onImageError={onImageError} profile={sellerProfile} />
+                </Grid>
+            </Grid>
+            <Grid container direction="row" justifyContent="space-between" sx={{ mt: '20px', mb: '20px' }}>
+                <Grid item>
+                    <Typography variant="subtitle1">
+                        Ends In
+                    </Typography>
+                </Grid>
+                <Grid item>
+                    <Typography variant="body1">
+                        {endTime > 0 ? `${endTime} minutes` : 'Expired'}
+                    </Typography>
+                    <Button>
+                        End Auction
+                    </Button>
+                </Grid>
+            </Grid>
+            <Grid container direction="row" justifyContent="space-between" sx={{ mt: '20px', mb: '20px' }}>
+                <Grid item>
+                    <Typography variant="subtitle1">
+                        Starting Price
+                    </Typography>
+                </Grid>
+                <Grid item>
+                    <Typography variant="body1">
+                        {_e(auctionItem.startingPrice)} Tapps
+                    </Typography>
+                </Grid>
+            </Grid>
+            <Divider sx={{ mb: '20px' }} />
+            {
+                auctionItem.bids.length > 0 ? auctionItem.bids.map((b, i) => {
+                    return <Grid container direction="row" alignItems="center" justifyContent="space-between" key={b.id}>
+                        <Grid item>
+                            {bidders[i] && <NFTUserProfile onImageError={onImageError} profile={bidders[i]} />}
+                        </Grid>
+                        <Grid item>
+                            <Typography variant="body1">
+                                {_e(b.price)} Tapps
+                            </Typography>
+                            {
+                                b.bidder === address && (auctionItem.ended || auctionItem.cancelled) &&
+                                <Button size="small">
+                                    Withdraw
+                                </Button>
+                            }
+                        </Grid>
+
+                    </Grid>
+                }) : <Typography>No Bid Found</Typography>
+            }
+        </MintingPaper>
+    }
+
     const fetchItemAction = () => {
         if (profile?.id) {
             if (nft.marketItemId.toString() !== "0") {
                 if (marketItem.seller == address) {
-                    console.log(marketItem.seller, address)
                     return <LoadingButton loading={isButtonLoading} variant="contained" onClick={cancelMarketListing} size="small" sx={{ width: '100%' }}>
                         Cancel Sell
                     </LoadingButton>
                 }
                 else {
-                    return <LoadingButton loading={isButtonLoading} variant="contained" size="small" sx={{ width: '100%' }}>
+                    return <LoadingButton loading={isButtonLoading} onClick={buyNFT} variant="contained" size="small" sx={{ width: '100%' }}>
                         Buy
                     </LoadingButton>
                 }
             } else if (nft.auctionId.toString() !== "0") {
-                if (nft.owner == address) {
-                    return <LoadingButton loading={isButtonLoading} variant="contained" size="small" sx={{ width: '100%' }}>
-                        Cancel Auction
-                    </LoadingButton>
+
+                if (auctionItem.seller == address) {
+                    return <>
+                        <LoadingButton loading={isButtonLoading} onClick={cancelAuctionItem} variant="contained" size="small" sx={{ width: '100%' }}>
+                            Cancel Auction
+                        </LoadingButton>
+                        <IconButton size="small" onClick={() => setIsAuctionDetailsModalOpen(true)}>
+                            <InfoOutlined fontSize="small" />
+                        </IconButton>
+                    </>
                 }
                 else {
-                    return <LoadingButton loading={isButtonLoading} variant="contained" size="small" sx={{ width: '100%' }}>
-                        Place Bid
-                    </LoadingButton>
+                    return <>
+                        <LoadingButton loading={isButtonLoading} onClick={() => setIsBiddingModalOpen(true)} variant="contained" size="small" sx={{ width: '100%' }}>
+                            Place Bid
+                        </LoadingButton>
+                        <IconButton size="small" onClick={() => setIsAuctionDetailsModalOpen(true)}>
+                            <InfoOutlined fontSize="small" />
+                        </IconButton>
+                    </>
                 }
             } else {
                 if (nft.owner == address) {
-                    return <Button variant="contained" onClick={() => setIsSaleModalOpen(true)} size="small" sx={{ width: '100%' }}>
-                        Sell
-                    </Button>
+                    return <>
+                        <Button variant="contained" onClick={() => setIsSaleModalOpen(true)} size="small" sx={{ width: '100%' }}>
+                            Sell
+                        </Button>
+                        {nft.offers.length > 0 && <IconButton size="small">
+                            <InfoOutlined fontSize="small" />
+                        </IconButton>}
+                    </>
                 }
                 else {
                     return <Button variant="contained" size="small" sx={{ width: '100%' }}>
@@ -182,12 +331,22 @@ export default ({ nft, collectionAddress, onMint }) => {
         }
 
     }
-    
+
 
     return <>
         <Modal open={isSaleModalOpen} onClose={() => setIsSaleModalOpen(false)}>
             <div>
                 <CreateSaleForm nft={nft} onSuccess={handleOnSuccess} />
+            </div>
+        </Modal>
+        <Modal open={isAuctionDetailsModalOpen} onClose={() => setIsAuctionDetailsModalOpen(false)}>
+            <div>
+                <AuctionDetails />
+            </div>
+        </Modal>
+        <Modal open={isBiddingModalOpen} onClose={() => setIsBiddingModalOpen(false)}>
+            <div>
+                <BiddingForm auctionItem={auctionItem} onSuccess={onMint} />
             </div>
         </Modal>
         <Stack sx={{ position: 'relative' }}>

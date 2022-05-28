@@ -2,6 +2,7 @@ import { LoadingButton } from "@mui/lab"
 import { Chip, Grid, Stack, TextField, Typography } from "@mui/material"
 import { styled } from "@mui/system"
 import { useState } from "react"
+import { startAuction } from "../../apis/auctions"
 import { createSale } from "../../apis/marketplace"
 import { _e, _w } from "../../utils/ethers"
 import { useWeb3 } from "../../utils/web3-context"
@@ -69,7 +70,7 @@ export default ({ nft, onSuccess }) => {
         if (Number(salePrice) < 1) return showAlert({ message: 'Price required', type: 'warning' })
         setButtonLoading(true)
         try {
-            const tx = await createSale(_w(salePrice), nft.contractAddress, nft.id, signer)
+            const tx = await createMarketItem(_w(salePrice), nft.contractAddress, nft.id, signer)
             await tx.wait(1)
             showAlert({ message: 'NFT listed in marketplace' })
             setButtonLoading(false)
@@ -77,12 +78,27 @@ export default ({ nft, onSuccess }) => {
         } catch (err) {
             console.log(err)
             showAlert({ message: 'Unable to list NFT in marketplace', type: "error" })
+            setButtonLoading(false)
         }
+
     }
     const createAuction = async () => {
         if (Number(auctionPrice) < 1) return showAlert({ message: 'Price required', type: 'warning' })
         if (Number(auctionTime) < 1) return showAlert({ message: 'Auction time required', type: 'warning' })
-        onSuccess()
+        setButtonLoading(true)
+        try {
+            const tx = await startAuction(nft.id, nft.contractAddress, _w(auctionPrice), (auctionTime * 60) / 5, signer)
+            await tx.wait(1)
+            showAlert({ message: 'Auction started' })
+            setButtonLoading(false)
+            onSuccess()
+        } catch (err) {
+            console.log(err)
+            setButtonLoading(false)
+            showAlert({ message: 'Error while starting auction', type: 'error' })
+        }
+
+
     }
     return <MintingPaper>
         <Alert onClose={handleClose} isOpen={isSnackbarOpen} type={alert.type} message={alert.message} />

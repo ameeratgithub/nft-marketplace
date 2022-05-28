@@ -31,6 +31,8 @@ contract Auctions is Ownable {
     }
 
     uint256 public auctionsCount;
+    uint256 public cancelledAuctionsCount;
+    uint256 public endedAuctionsCount;
 
     // Collection Address -> Token ID
     mapping(address => mapping(uint256 => bool)) private _hasAuctionStarted;
@@ -56,6 +58,10 @@ contract Auctions is Ownable {
             "Marketplace: Invalid Tapp Address"
         );
         tapp = IERC20(_tappAddress);
+    }
+
+    function hasParticipated(uint256 _id) public view returns (bool) {
+        return alreadyParticipated[msg.sender][_id];
     }
 
     function startAuction(
@@ -167,6 +173,7 @@ contract Auctions is Ownable {
         );
 
         auction.cancelled = true;
+        cancelledAuctionsCount++;
         IERC721e(auction.contractAddress).resetAuction(auction.tokenId);
         _hasAuctionStarted[auction.contractAddress][auction.tokenId] = false;
     }
@@ -188,12 +195,10 @@ contract Auctions is Ownable {
         );
 
         auction.ended = true;
+        endedAuctionsCount++;
         bidderAuctionAmount[auction.highestBid.bidder][_id] = 0;
         _hasAuctionStarted[auction.contractAddress][auction.tokenId] = false;
-        tapp.transfer(
-            auction.seller,
-            auction.highestBid.price
-        );
+        tapp.transfer(auction.seller, auction.highestBid.price);
         IERC721e(auction.contractAddress).resetAuction(auction.tokenId);
 
         IERC721e(auction.contractAddress).userTransferFrom(
@@ -228,5 +233,19 @@ contract Auctions is Ownable {
 
     function getAuction(uint256 _id) public view returns (Auction memory) {
         return auctions[_id];
+    }
+
+    function getAuctions() public view returns (Auction[] memory) {
+        Auction[] memory _auctions = new Auction[](
+            auctionsCount - cancelledAuctionsCount - endedAuctionsCount
+        );
+
+        for (uint256 i; i < auctionsCount; i++) {
+            Auction auction = auctions[i + 1];
+            if (!auction.ended && !auction.cancelled) {
+                _auctions[i] = auction;
+            }
+        }
+        return _auctions;
     }
 }
