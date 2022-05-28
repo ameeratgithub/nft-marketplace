@@ -68,7 +68,7 @@ contract ERC721e is ERC721, IERC721Receiver, IERC721e {
     {
         require(_tokenIds.length > 0, "ERC721e: Pass some values");
         NFT[] memory tokens = new NFT[](_tokenIds.length);
-        for (uint256 i; i < tokenCount; i++) {
+        for (uint256 i; i < _tokenIds.length; i++) {
             tokens[i] = _tokens[_tokenIds[i]];
         }
 

@@ -4,7 +4,6 @@ export default ({ collection }) => {
     const { id, name, description, bannerUri, collectionAddress, owner, collectionType } = collection
     
     const descString = description.length > 90 ? description.substring(0, 90) + "..." : description
-
     return <Link href={`/collections/${id}?type=${collectionType}`} passHref>
         <Card>
             <CardActionArea>

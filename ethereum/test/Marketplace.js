@@ -1,186 +1,201 @@
 const { ethers } = require('hardhat')
 const { expect } = require('chai').use(require('chai-as-promised'))
 
-const ERC721le = require('../artifacts/contracts/standards/ERC721le.sol/ERC721le.json')
-
-const _e = (amount) => {
-    return ethers.utils.parseEther(amount.toString())
+const _w = (ether) => {
+    return ethers.utils.parseEther(ether.toString())
 }
-const _w = (amount) => {
-    return ethers.utils.formatEther(amount.toString())
+const _e = (wei) => {
+    return ethers.utils.formatEther(wei)
 }
 
 describe("Marketplace", () => {
-    let marketplace, signer, signer2, signer3, tapp, monuments, user
+    let marketplace, signer, signer2, signer3, tapp, monuments, user, auctions, offers
+    let tokens
+
+    async function deployMarketplace() {
+        const Marketplace = await ethers.getContractFactory('Marketplace')
+        marketplace = await Marketplace.deploy()
+        await marketplace.deployed()
+    }
+    async function deployUser() {
+        const User = await ethers.getContractFactory('User')
+        user = await User.deploy()
+        await user.deployed()
+    }
+    async function registerUsers() {
+        await user.add(signer.address)
+        await user.add(signer2.address)
+        await user.add(signer3.address)
+    }
+
+    async function deployAuctions() {
+        const Auctions = await ethers.getContractFactory('Auctions')
+        auctions = await Auctions.deploy()
+        await auctions.deployed()
+    }
+
+    async function deployOffers() {
+        const Offers = await ethers.getContractFactory('Offers')
+        offers = await Offers.deploy()
+        await offers.deployed()
+    }
+    async function deployTapp() {
+        const Tapp = await ethers.getContractFactory('Tapp')
+        tapp = await Tapp.deploy()
+        await tapp.deployed()
+    }
+    async function assignTappAddresses() {
+        await marketplace.setTappContract(tapp.address)
+        await auctions.setTappContract(tapp.address)
+    }
+    async function setTappDependencies() {
+        await tapp.setAuctionsAddress(auctions.address)
+    }
+    async function deployMonuments() {
+        const Monuments = await ethers.getContractFactory('Monuments')
+        monuments = await Monuments.deploy(tapp.address, user.address, marketplace.address, offers.address, auctions.address)
+        await monuments.deployed()
+    }
+    async function mintTapps() {
+        await tapp.mint(_w(4000))
+        await tapp.connect(signer2).mint(_w(4000))
+        await tapp.connect(signer3).mint(_w(4000))
+    }
+    async function mintNFTs() {
+        await monuments.mint("uri")
+        await monuments.mint("uri")
+        await monuments.mint("uri")
+    }
+    async function getTokensList() {
+        tokens = await monuments.getTokensList()
+    }
 
     beforeEach(async () => {
 
         [signer, signer2, signer3] = await ethers.getSigners()
 
-        const Marketplace = await ethers.getContractFactory('Marketplace')
-        marketplace = await Marketplace.deploy()
-        await marketplace.deployed()
-
-        const User = await ethers.getContractFactory('User')
-        user = await User.deploy()
-        await user.deployed()
-
-        await user.add(signer.address)
-        await user.add(signer2.address)
-        await user.add(signer3.address)
-
-        const Tapp = await ethers.getContractFactory('Tapp')
-        tapp = await Tapp.deploy(marketplace.address)
-        await tapp.deployed()
-
-        const Monuments = await ethers.getContractFactory('Monuments')
-        monuments = await Monuments.deploy(tapp.address, user.address, marketplace.address)
-        await monuments.deployed()
-
-        await marketplace.setTappContract(tapp.address)
-
-
-        await tapp.mint(_e(4000))
-        await tapp.connect(signer2).mint(_e(4000))
-        await tapp.connect(signer3).mint(_e(4000))
-
-        await monuments.mint("uri")
-        await monuments.mint("uri")
-
-        await marketplace.createMarketItem(_e(200), monuments.address, 2)
-        await marketplace.createMarketItem(_e(100), monuments.address, 1)
+        await deployMarketplace()
+        await deployUser()
+        await registerUsers()
+        await deployAuctions()
+        await deployOffers()
+        await deployTapp()
+        await assignTappAddresses()
+        await setTappDependencies()
+        await deployMonuments()
+        await mintTapps()
+        await mintNFTs()
+        await getTokensList()
 
     })
 
-    describe("Success", () => {
-        it('creates market items successfully', async () => {
-            const item1 = await marketplace.items(1)
-            const item2 = await marketplace.items(2)
-
-            expect(item1.price.toString()).to.eq(_e(200))
-            expect(item2.price.toString()).to.eq(_e(100))
-
-            const nfts = await monuments.tokensByIds([item1.tokenId, item2.tokenId])
-
-            expect(nfts[0].onSale).to.be.true
-            expect(nfts[1].onSale).to.be.true
-
-            expect(nfts[0].owner).to.eq(marketplace.address)
-            expect(nfts[1].owner).to.eq(marketplace.address)
-
-            expect(nfts[0].marketItemId.toString()).to.eq("1")
-            expect(nfts[1].marketItemId.toString()).to.eq("2")
+    describe.only("Success", () => {
+        beforeEach(async () => {
+            await marketplace.createMarketItem(_w(1), tokens[0].contractAddress, tokens[0].id)
+            await getTokensList()
         })
-        it('creates sale successfully', async () => {
-            const item1 = await marketplace.items(1)
-            const item2 = await marketplace.items(2)
-
-            await marketplace.connect(signer2).createSale(item1.id, monuments.address)
-            await marketplace.connect(signer2).createSale(item2.id, monuments.address)
-
-            const nfts = await monuments.tokensByIds([item1.tokenId, item2.tokenId])
-
-            expect(nfts[0].onSale).to.be.false
-            expect(nfts[1].onSale).to.be.false
-
-            expect(nfts[0].owner).to.eq(signer2.address)
-            expect(nfts[1].owner).to.eq(signer2.address)
-
-            expect(await monuments.ownerOf(nfts[0].id)).to.eq(signer2.address)
-            expect(await monuments.ownerOf(nfts[1].id)).to.eq(signer2.address)
-
-            const userId = await user.users(signer2.address)
-
-            const collections = await user.getAllTokens(userId.toString())
-
-            expect(collections[0].tokens[0].toString()).to.eq(nfts[0].id)
-            expect(collections[0].tokens[1].toString()).to.eq(nfts[1].id)
-
-            const buyerBalance = await tapp.balanceOf(signer2.address)
-            const sellerBalance = await tapp.balanceOf(signer.address)
-
-            expect(Number(_w(sellerBalance))).to.be.eq(4300)
-            expect(Number(_w(buyerBalance))).to.be.eq(3700)
+        describe.only("Create Market Item", () => {
+            it('should transfer nft successfull to the contract', async () => {
+                expect(tokens[0].owner).to.eq(marketplace.address)
+            })
+            it('should set market id for nft', async () => {
+                expect(tokens[0].marketItemId.toString()).to.eq("1")
+            })
+            it('should get remaining nfts', async () => {
+                const _tokens =await monuments.tokensByIds([2,3])
+                expect(_tokens.length).to.eq(2)
+                expect(_tokens[0].id.toString()).to.eq("2")
+                expect(_tokens[1].id.toString()).to.eq("3")
+            })
         })
-        it('gets items on sale', async () => {
-            let items = await marketplace.getItemsOnSale();
-
-            expect(items[0].tokenId.toString()).to.eq("2")
-            expect(items[1].tokenId.toString()).to.eq("1")
-            
-            expect(items[0].sold).to.be.false
-            expect(items[1].sold).to.be.false
+        xdescribe("Cancel Listing", () => {
+            let auction
+            beforeEach(async () => {
+                await auctions.cancelAuction(1)
+                auction = await auctions.auctions(1)
+                await getTokensList()
+            })
+            it('should mark auction as cancelled', async () => {
+                expect(auction.cancelled).to.be.true
+            })
+            it('transfer nft back successfully', async () => {
+                expect(tokens[0].owner).to.eq(signer.address)
+            })
+            it('should reset auction id for nft', async () => {
+                expect(tokens[0].auctionId.toString()).to.eq("0")
+            })
+        })
+        xdescribe("Creating Sale", () => {
+            let auction
+            beforeEach(async () => {
+                await auctions.connect(signer2).placeBid(1, _w(1))
+                await auctions.connect(signer3).placeBid(1, _w(2))
+                await auctions.connect(signer2).placeBid(1, _w(3))
+                auction = await auctions.getAuction(1)
+            })
+            it('should transfer funds from user to auction contract', async () => {
+                expect((await tapp.balanceOf(signer2.address)).toString()).to.eq(_w(3997))
+                expect((await tapp.balanceOf(auctions.address)).toString()).to.eq(_w(5))
+            })
+            it('should get proper highest bid', async () => {
+                expect(auction.highestBid.price.toString()).to.eq(_w(3))
+            })
+            it('should track total bids', async () => {
+                expect(auction.bids.length).to.eq(3)
+            })
+        })
+    })
+    describe("Failure", () => {
+        describe("Create Market Item", () => {
+            it('should not create item with price less than 1 tapp', async () => {
+                await expect(marketplace.createMarketItem(_w(0.9), tokens[0].contractAddress, tokens[0].id))
+                    .to.be.rejectedWith("Marketplace: Price must be at least 1 tapp")
+            })
+            it('should not create item with tokenId less than 1', async () => {
+                await expect(marketplace.createMarketItem(_w(1), tokens[0].contractAddress, 0))
+                    .to.be.rejectedWith("Marketplace: Invalid token Id")
+            })
+            it('should not accept zero address for nft contract', async () => {
+                await expect(marketplace.createMarketItem(_w(1), ethers.constants.AddressZero, tokens[0].id))
+                    .to.be.rejectedWith("Marketplace: Invalid contract")
+            })
+            it('should not accept if sender is not nft owner', async () => {
+                await expect(marketplace.connect(signer2).createMarketItem(_w(1), tokens[0].contractAddress, tokens[0].id))
+                    .to.be.rejectedWith("Marketplace: You don't own this nft")
+            })
 
         })
-        it('should not get sold items', async () => {
-            let items = await marketplace.getItemsOnSale();
-            
-            await marketplace.connect(signer2).createSale(items[0].id, monuments.address)
-
-            items = await marketplace.getItemsOnSale();
-
-            expect(items.length).to.eq(1)
-
-            expect(items[0].tokenId.toString()).to.eq("1")
-            
-            expect(items[0].sold).to.be.false
-            
+        describe("Cancel Listing", () => {
+            beforeEach(async () => {
+                await marketplace.createMarketItem(_w(1), tokens[0].contractAddress, tokens[0].id)
+            })
+            it('should not cancel listing if id is invalid', async () => {
+                await expect(marketplace.cancelListing(2))
+                    .to.be.rejectedWith("Marketplace: Item doesn't exist")
+            })
+            it('should not cancel if already cancelled', async () => {
+                await marketplace.cancelListing(1)
+                await expect(marketplace.cancelListing(1))
+                    .to.be.rejectedWith("Marketplace: Already cancelled")
+            })
+            it('should not cancel if sender is not owner', async () => {
+                await expect(marketplace.connect(signer2).cancelListing(1))
+                    .to.be.rejectedWith("Marketplace: You can't cancel market item")
+            })
         })
-
-        it('should not get cancelled items', async () => {
-            let items = await marketplace.getItemsOnSale();
-
-            await marketplace.cancelSale(items[1].id, monuments.address)
-            
-            items = await marketplace.getItemsOnSale();
-            
-            expect(items.length).to.eq(1)
-
-            expect(items[0].tokenId.toString()).to.eq("2")
-            
-            expect(items[0].sold).to.be.false
-            
-        })
-        it('should get sold items', async () => {
-            let items = await marketplace.getItemsOnSale();
-
-            await marketplace.connect(signer2).createSale(items[0].id, monuments.address)
-            await marketplace.connect(signer2).createSale(items[1].id, monuments.address)
-
-            items = await marketplace.getItemsSold();
-
-            expect(items.length).to.eq(2)
-
-            expect(items[0].tokenId.toString()).to.eq("2")
-            expect(items[1].tokenId.toString()).to.eq("1")
-            
-            expect(items[0].sold).to.be.true
-            expect(items[1].sold).to.be.true
-            
-            expect(items[0].buyer).to.eq(signer2.address)
-            expect(items[1].buyer).to.eq(signer2.address)
-        })
-        it('should get cancelled items', async () => {
-            let items = await marketplace.getItemsOnSale();
-
-            await marketplace.cancelSale(items[0].id, monuments.address)
-            await marketplace.cancelSale(items[1].id, monuments.address)
-
-            items = await marketplace.getItemsCancelled();
-
-            expect(items.length).to.eq(2)
-
-            expect(items[0].tokenId.toString()).to.eq("2")
-            expect(items[1].tokenId.toString()).to.eq("1")
-            
-            expect(items[0].sold).to.be.false
-            expect(items[1].sold).to.be.false
-            
-            expect(items[0].cancelled).to.be.true
-            expect(items[1].cancelled).to.be.true
-            
-            expect(await monuments.ownerOf(items[0].tokenId.toString())).to.eq(signer.address)
-            expect(await monuments.ownerOf(items[1].tokenId.toString())).to.eq(signer.address)
+        describe("Creating Sale", () => {
+            beforeEach(async () => {
+                await marketplace.createMarketItem(_w(1), tokens[0].contractAddress, tokens[0].id)
+            })
+            it('should not create sale if id is invalid', async () => {
+                await expect(marketplace.createSale(2))
+                    .to.be.rejectedWith("Marketplace: Item doesn't exist")
+            })
+            it('should not create sale if listing is cancelled', async () => {
+                await marketplace.cancelListing(1)
+                await expect(marketplace.createSale(1))
+                    .to.be.rejectedWith("Marketplace: Sale for this tem has been cancelled")
+            })
         })
     })
 

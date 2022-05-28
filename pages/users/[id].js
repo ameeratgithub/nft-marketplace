@@ -16,6 +16,7 @@ import { Web3Storage } from "web3.storage"
 import Alert from "../../components/common/Alert"
 import CollectionCard from "../../components/collections/CollectionCard"
 import PropTypes from 'prop-types';
+import { getMarketplaceItem } from "../../apis/marketplace"
 
 
 
@@ -151,7 +152,7 @@ export default ({ web3StorageKey }) => {
         const promises = _buildPromises(collections)
         const results = await Promise.all(promises)
 
-        const filteredResults = _filterResults(collections, results)
+        const filteredResults = await _filterResults(collections, results)
 
         const tokenPromises = filteredResults.map(c => tokensByIds721(c.tokens, c.collection, signer))
 
@@ -171,21 +172,35 @@ export default ({ web3StorageKey }) => {
         return promisesArray
     }
 
-    const _filterResults = (collections, results) => {
+    const _filterResults = async (collections, results) => {
         const ownedNfts = []
         const nftIndex = 0;
-        collections.forEach((c, i) => {
+        for (const c of collections) {
             const col = {}
             col.collection = c.collectionAddress
             col.tokens = []
-            c.tokens.forEach((t, j) => {
+            for (const t of c.tokens) {
                 if (results[nftIndex] === profile.userAddress) {
                     col.tokens.push(t.toString())
+                } else {
+                    if (!t) return
+                    const _tokens = await tokensByIds721([t.toString()], c.collectionAddress, signer)
+                    const marketItemId = _tokens[0].marketItemId.toString()
+                    if (marketItemId !== "0") {
+                        const marketItem = await getMarketplaceItem(marketItemId, signer)
+                        if (marketItem.seller === profile.userAddress) {
+                            col.tokens.push(t.toString())
+                        }
+                    }
+
                 }
                 nftIndex++;
-            })
+            }
             ownedNfts.push(col)
-        })
+        }
+        // collections.forEach((c, i) => {
+
+        // })
         return ownedNfts
     }
 

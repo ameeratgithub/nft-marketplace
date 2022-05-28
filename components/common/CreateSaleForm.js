@@ -2,6 +2,9 @@ import { LoadingButton } from "@mui/lab"
 import { Chip, Grid, Stack, TextField, Typography } from "@mui/material"
 import { styled } from "@mui/system"
 import { useState } from "react"
+import { createSale } from "../../apis/marketplace"
+import { _e, _w } from "../../utils/ethers"
+import { useWeb3 } from "../../utils/web3-context"
 import { MintingPaper } from "../collections/CreateCollectionForm"
 import Alert from "./Alert"
 
@@ -12,6 +15,9 @@ const SaleChip = styled(Chip)({
 
 })
 export default ({ nft, onSuccess }) => {
+
+    const { signer, address } = useWeb3()
+
     const [isListingSelected, setIsListingSelected] = useState(true)
 
     const [salePrice, setSalePrice] = useState('1')
@@ -61,7 +67,17 @@ export default ({ nft, onSuccess }) => {
 
     const createListing = async () => {
         if (Number(salePrice) < 1) return showAlert({ message: 'Price required', type: 'warning' })
-        onSuccess()
+        setButtonLoading(true)
+        try {
+            const tx = await createSale(_w(salePrice), nft.contractAddress, nft.id, signer)
+            await tx.wait(1)
+            showAlert({ message: 'NFT listed in marketplace' })
+            setButtonLoading(false)
+            onSuccess()
+        } catch (err) {
+            console.log(err)
+            showAlert({ message: 'Unable to list NFT in marketplace', type: "error" })
+        }
     }
     const createAuction = async () => {
         if (Number(auctionPrice) < 1) return showAlert({ message: 'Price required', type: 'warning' })

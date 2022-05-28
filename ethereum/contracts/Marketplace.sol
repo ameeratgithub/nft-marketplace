@@ -43,10 +43,14 @@ contract Marketplace is Ownable {
     ) public {
         require(
             _price >= 1 ether,
-            "Marketplace: Price must be at least 1 ether"
+            "Marketplace: Price must be at least 1 tapp"
         );
         require(_tokenId > 0, "Marketplace: Invalid token Id");
         require(_nftContract != address(0), "Marketplace: Invalid contract");
+        require(
+            IERC721(_nftContract).ownerOf(_tokenId) == msg.sender,
+            "Marketplace: You don't own this nft"
+        );
 
         IERC721(_nftContract).transferFrom(msg.sender, address(this), _tokenId);
         itemsCount++;
@@ -61,21 +65,17 @@ contract Marketplace is Ownable {
         IERC721e(_nftContract).putOnSale(_tokenId, itemsCount);
     }
 
-    function cancelSale(uint256 _itemId, address _nftContract) public {
+    function cancelListing(uint256 _itemId) public {
         Item storage item = items[_itemId];
         require(item.id > 0, "Marketplace: Item doesn't exist");
         require(!item.cancelled, "Marketplace: Already cancelled");
         require(
             msg.sender == item.seller,
-            "Marketplace: You can't cancel market item "
-        );
-        require(
-            _nftContract != address(0),
-            "Marketplace: Invalid NFT contract"
+            "Marketplace: You can't cancel market item"
         );
 
-        IERC721e(_nftContract).createSale(item.tokenId);
-        IERC721e(_nftContract).userTransferFrom(
+        IERC721e(item.nftContract).createSale(item.tokenId);
+        IERC721e(item.nftContract).userTransferFrom(
             address(this),
             msg.sender,
             item.tokenId
@@ -84,7 +84,7 @@ contract Marketplace is Ownable {
         itemsCancelled++;
     }
 
-    function createSale(uint256 _itemId, address _nftContract) public {
+    function createSale(uint256 _itemId) public {
         Item storage item = items[_itemId];
         require(item.id > 0, "Marketplace: Item doesn't exist");
         require(
@@ -95,15 +95,12 @@ contract Marketplace is Ownable {
             tapp.allowance(msg.sender, address(this)) >= item.price,
             "Marketplace: Please allow funds to make sale"
         );
-        require(
-            _nftContract != address(0),
-            "Marketplace: Invalid NFT contract"
-        );
+        
         tapp.transferFrom(msg.sender, item.seller, item.price);
 
-        IERC721e(_nftContract).createSale(item.tokenId);
+        IERC721e(item.nftContract).createSale(item.tokenId);
 
-        IERC721e(_nftContract).userTransferFrom(
+        IERC721e(item.nftContract).userTransferFrom(
             address(this),
             msg.sender,
             item.tokenId
@@ -144,6 +141,7 @@ contract Marketplace is Ownable {
         }
         return _items;
     }
+
     function getItemsCancelled() public view returns (Item[] memory) {
         Item[] memory _items = new Item[](itemsCancelled);
 

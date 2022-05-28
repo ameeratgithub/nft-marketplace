@@ -8,7 +8,7 @@ const _e = (wei) => {
     return ethers.utils.formatEther(wei)
 }
 
-describe("Offers", () => {
+describe("Auctions", () => {
     let marketplace, signer, signer2, signer3, tapp, monuments, user, auctions, offers
     let tokens
 

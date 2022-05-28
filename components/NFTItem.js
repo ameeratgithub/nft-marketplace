@@ -2,9 +2,12 @@
 import { Button, Chip, Grid, LinearProgress, Modal, Paper, Stack, Typography } from "@mui/material"
 import { styled } from "@mui/system"
 import Link from "next/link"
+import { LoadingButton } from "@mui/lab"
+
 
 import { useEffect, useState } from "react"
 import { lazyMint } from "../apis/collection"
+import { getMarketplaceItem, cancelListing } from "../apis/marketplace"
 import { approve } from "../apis/tapp"
 import { getUserProfile } from "../apis/user"
 import { _e } from "../utils/ethers"
@@ -52,13 +55,27 @@ export default ({ nft, collectionAddress, onMint }) => {
     const [alert, setAlert] = useState({})
     const { tapp: { balance } } = useDappProvider()
 
+    const [marketItem, setMarketItem] = useState({})
+
     const [isSaleModalOpen, setIsSaleModalOpen] = useState(false)
+
+    const [isButtonLoading, setIsButtonLoading] = useState(false)
 
     useEffect(() => {
         fetchNftMetaData()
-        if (address && nft.owner) fetchUserProfile()
+        if (address && nft.owner) {
+            fetchUserProfile()
+            fetchSellingData()
+        }
 
     }, [address])
+    const fetchSellingData = async () => {
+        if (nft.marketItemId.toString() !== "0") {
+            const item = await getMarketplaceItem(nft.marketItemId.toString(), signer)
+            console.log(item)
+            setMarketItem(item)
+        }
+    }
     const fetchUserProfile = async () => {
         const p = await getUserProfile(nft.owner, signer)
         setProfile(p)
@@ -79,16 +96,16 @@ export default ({ nft, collectionAddress, onMint }) => {
         setIsSnackbarOpen(false)
     }
     const approveTapps = async () => {
-        await approve(collectionAddress, nft.price, signer)
+        await approve(nft.contractAddress, nft.price, signer)
     }
     const mintLazy = async () => {
         if (balance < _e(nft.price)) {
             return showAlert(`You need ${_e(nft.price) - balance} more tapps to mint NFT`, 'warning')
         }
-        if (!collectionAddress) return
+        if (!nft.contractAddress) return
         try {
             await approveTapps()
-            const tx = await lazyMint(nft.id, nft.uri, collectionAddress, signer)
+            const tx = await lazyMint(nft.id, nft.uri, nft.contractAddress, signer)
             await tx.wait(1)
             showAlert(`NFT minted successfully`, 'info')
         } catch (err) {
@@ -101,38 +118,63 @@ export default ({ nft, collectionAddress, onMint }) => {
         currentTarget.onerror = null
         currentTarget.src = fallBackImage
     }
+    const cancelMarketListing = async () => {
+        setIsButtonLoading(true)
+        if (!marketItem.id) return
+        try {
+            const tx = await cancelListing(marketItem.id.toString(), signer)
+            await tx.wait(1)
+            showAlert(`NFT Listing cancelled`, 'info')
+            onMint()
+        } catch (err) {
+            console.log(err)
+            showAlert(`Error occured while cancelling nft listing`, 'error')
+        }
+        setIsButtonLoading(false)
+
+    }
+    const handleOnSuccess = async () => {
+        setIsSaleModalOpen(false)
+        await fetchSellingData()
+        onMint()
+    }
     const fetchItemAction = () => {
         if (profile?.id) {
-            if (nft.owner == address) {
-                if (nft.marketItemId.toString() !== "0") {
-                    return <Button variant="contained" size="small" sx={{ width: '100%' }}>
+            if (nft.marketItemId.toString() !== "0") {
+                if (marketItem.seller == address) {
+                    console.log(marketItem.seller, address)
+                    return <LoadingButton loading={isButtonLoading} variant="contained" onClick={cancelMarketListing} size="small" sx={{ width: '100%' }}>
                         Cancel Sell
-                    </Button>
-                } else if (nft.auctionId.toString() !== "0") {
-                    return <Button variant="contained" size="small" sx={{ width: '100%' }}>
+                    </LoadingButton>
+                }
+                else {
+                    return <LoadingButton loading={isButtonLoading} variant="contained" size="small" sx={{ width: '100%' }}>
+                        Buy
+                    </LoadingButton>
+                }
+            } else if (nft.auctionId.toString() !== "0") {
+                if (nft.owner == address) {
+                    return <LoadingButton loading={isButtonLoading} variant="contained" size="small" sx={{ width: '100%' }}>
                         Cancel Auction
-                    </Button>
-                } else {
+                    </LoadingButton>
+                }
+                else {
+                    return <LoadingButton loading={isButtonLoading} variant="contained" size="small" sx={{ width: '100%' }}>
+                        Place Bid
+                    </LoadingButton>
+                }
+            } else {
+                if (nft.owner == address) {
                     return <Button variant="contained" onClick={() => setIsSaleModalOpen(true)} size="small" sx={{ width: '100%' }}>
                         Sell
                     </Button>
                 }
-            } else {
-                if (nft.marketItemId.toString() !== "0") {
-                    return <Button variant="contained" size="small" sx={{ width: '100%' }}>
-                        Buy
-                    </Button>
-                } else if (nft.auctionId.toString() !== "0") {
-                    return <Button variant="contained" size="small" sx={{ width: '100%' }}>
-                        Place Bid
-                    </Button>
-                } else {
+                else {
                     return <Button variant="contained" size="small" sx={{ width: '100%' }}>
                         Create Offer
                     </Button>
                 }
             }
-
         } else if (!nft.minted && !nft.owner) {
             return <Button variant="contained" size="small" onClick={mintLazy} sx={{ width: '100%' }}>
                 Mint
@@ -140,15 +182,12 @@ export default ({ nft, collectionAddress, onMint }) => {
         }
 
     }
-    const handleOnSuccess=()=>{
-        setIsSaleModalOpen(false)
-        onMint()
-    }
+    
 
     return <>
         <Modal open={isSaleModalOpen} onClose={() => setIsSaleModalOpen(false)}>
             <div>
-                <CreateSaleForm nft={nft} onSuccess={handleOnSuccess}/>
+                <CreateSaleForm nft={nft} onSuccess={handleOnSuccess} />
             </div>
         </Modal>
         <Stack sx={{ position: 'relative' }}>
@@ -161,6 +200,7 @@ export default ({ nft, collectionAddress, onMint }) => {
                     <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between">
                         <Typography variant="subtitle1" >{nftMeta?.name || 'Metadata Loading'}</Typography>
                         {nft.price && <Chip label={_e(nft.price)} size="small" />}
+                        {marketItem.price && <Chip label={_e(marketItem.price)} size="small" />}
                     </Stack>
 
                     <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between"

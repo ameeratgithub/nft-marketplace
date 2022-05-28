@@ -65,6 +65,8 @@ async function deployMonuments() {
     const Monuments = await ethers.getContractFactory('Monuments')
     monuments = await Monuments.deploy(tapp.address, user.address, marketplace.address, offers.address, auctions.address)
     await monuments.deployed()
+
+    console.log("Monuments deployed to", monuments.address)
 }
 
 async function deployCollections() {
