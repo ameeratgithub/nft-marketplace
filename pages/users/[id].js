@@ -17,6 +17,7 @@ import Alert from "../../components/common/Alert"
 import CollectionCard from "../../components/collections/CollectionCard"
 import PropTypes from 'prop-types';
 import { getMarketplaceItem } from "../../apis/marketplace"
+import { getAuction } from "../../apis/auctions"
 
 
 
@@ -50,7 +51,7 @@ function TabPanel(props) {
             {...other}
         >
             {value === index && (
-                <Box sx={{ p: 3 }}>
+                <Box>
                     {children}
                     {/* <div>
                         <Typography></Typography>
@@ -133,8 +134,9 @@ export default ({ web3StorageKey }) => {
     }, [profile])
 
     const loadProfileData = async () => {
-        getProfile()
-        getCollections()
+        await getProfile()
+        await getCollections()
+        console.log("Users: Profile data loaded")
     }
     const getCollections = async () => {
         const _collections = await getUserCollections(address, signer)
@@ -186,9 +188,15 @@ export default ({ web3StorageKey }) => {
                     if (!t) return
                     const _tokens = await tokensByIds721([t.toString()], c.collectionAddress, signer)
                     const marketItemId = _tokens[0].marketItemId.toString()
+                    const auctionId = _tokens[0].auctionId.toString()
                     if (marketItemId !== "0") {
                         const marketItem = await getMarketplaceItem(marketItemId, signer)
                         if (marketItem.seller === profile.userAddress) {
+                            col.tokens.push(t.toString())
+                        }
+                    } else if (auctionId !== "0") {
+                        const auctionItem = await getAuction(auctionId, signer)
+                        if (auctionItem.seller === profile.userAddress) {
                             col.tokens.push(t.toString())
                         }
                     }
@@ -198,9 +206,6 @@ export default ({ web3StorageKey }) => {
             }
             ownedNfts.push(col)
         }
-        // collections.forEach((c, i) => {
-
-        // })
         return ownedNfts
     }
 
@@ -446,7 +451,7 @@ export default ({ web3StorageKey }) => {
         </BannerBox>}
         <Layout>
             <Stack sx={{ mt: '350px' }}>
-                <Box sx={{ width: '100%' }}>
+                <Box>
                     <MaterialBox sx={{ borderBottom: 1, borderColor: 'divider' }}>
                         <Tabs value={tabValue} onChange={handleTabChange} aria-label="basic tabs example">
                             <Tab label={`Owned (${tokens?.length || 0})`} />
@@ -454,14 +459,14 @@ export default ({ web3StorageKey }) => {
                         </Tabs>
                     </MaterialBox>
                     <TabPanel value={tabValue} index={0}>
-                        <Grid container spacing={12} sx={{ mb: '40px' }}>
+                        <Grid container spacing={12} sx={{ mt: '-40px', mb: '40px' }}>
                             {tokens?.length > 0 ? tokens?.map(t => <Grid item xs={12} md={4} lg={3} xl={3} key={t.id.toString()}>
-                                <NFTItem nft={t} />
+                                <NFTItem nft={t} onMint={loadProfileData} />
                             </Grid>) : <Grid item><Typography variant="subtitle1">No Owned NFT Found</Typography></Grid>}
                         </Grid>
                     </TabPanel>
-                    <TabPanel value={tabValue} index={1}>
-                        <Grid container direction="row" spacing={4}>
+                    <TabPanel value={tabValue} index={1} >
+                        <Grid container direction="row" spacing={4} sx={{ mt: '-10px' }}>
                             {
                                 collections?.length > 0 ? collections?.map((c, i) =>
                                     <Grid key={i} item lg={4} xl={4} md={4} sm={12}>

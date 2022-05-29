@@ -1,6 +1,10 @@
 import { LoadingButton } from "@mui/lab"
 import { Stack, TextField, Typography } from "@mui/material"
+import { useState } from "react"
 import { placeBid } from "../../apis/auctions"
+import { _e, _w } from "../../utils/ethers"
+import { useDappProvider } from "../../utils/providers"
+import { useWeb3 } from "../../utils/web3-context"
 import { MintingPaper } from "../collections/CreateCollectionForm"
 import Alert from "../common/Alert"
 
@@ -10,6 +14,10 @@ export default ({ auctionItem, onSuccess }) => {
 
     const [isSnackbarOpen, setIsSnackbarOpen] = useState(false)
     const [alert, setAlert] = useState({})
+
+    const { signer, address, provider } = useWeb3()
+
+    const { tapp: { balance } } = useDappProvider()
 
     const [biddingPrice, setBiddingPrice] = useState('1')
 
@@ -27,6 +35,7 @@ export default ({ auctionItem, onSuccess }) => {
 
     const placeAuctionBid = async () => {
         if (Number(biddingPrice) <= highestPrice) return showAlert('Please increase your bidding amount', 'warning')
+        if (Number(balance) < highestPrice) return showAlert('You don\'t have enough balance', 'warning')
         setIsButtonLoading(true)
         try {
             const tx = await placeBid(auctionItem.id, _w(biddingPrice), signer)

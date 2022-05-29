@@ -31,3 +31,7 @@ export const hasParticipated = (id, signer) => {
     const auctions = getAuctionsContract(signer)
     return auctions.hasParticipated(id)
 }
+export const isExpired = (id, signer) => {
+    const auctions = getAuctionsContract(signer)
+    return auctions.isExpired(id)
+}

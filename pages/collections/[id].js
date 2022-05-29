@@ -87,9 +87,9 @@ export default ({ web3StorageKey }) => {
 
         setSort(_sort)
     }
-    const handleOnSuccess = () => {
+    const handleOnSuccess = async () => {
         setOpenMintingModal(false)
-        loadTokens()
+        await loadTokens()
         
     }
 

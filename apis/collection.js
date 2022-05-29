@@ -32,3 +32,7 @@ export const tokensByIds721 = (tokenIds, address, signer) => {
     const collection = getERC721Contract(address, signer)
     return collection.tokensByIds(tokenIds)
 }
+export const approvedAllContracts = (address, signer) => {
+    const collection = getERC721Contract(address, signer)
+    return collection.approvedAllContracts()
+}

@@ -103,6 +103,7 @@ export default ({ children }) => {
     }, [])
 
     const loadAccount = async () => {
+        console.log("Load Account Called")
         setContextLoading(true)
         let provider, signer
         if (window.ethereum) {

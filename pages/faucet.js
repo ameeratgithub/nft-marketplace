@@ -11,7 +11,7 @@ import { useDappProvider, useUpdatedDappProvider } from "../utils/providers"
 import { LoadingButton } from "@mui/lab"
 
 export default ({ }) => {
-    const [amount, setAmount] = useState('')
+    const [amount, setAmount] = useState('1')
     const [loading, setLoading] = useState(false)
 
     const { signer, address } = useWeb3()
@@ -25,6 +25,7 @@ export default ({ }) => {
         try {
             const tx = await mint(_w(amount), signer)
             await tx.wait(1)
+            setAmount('1')
         } catch (err) { }
         setLoading(false)
         loadTappData()

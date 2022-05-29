@@ -7,8 +7,15 @@ const ERC721JSON = require('../ethereum/artifacts/contracts/standards/ERC721le.s
 const MarketplaceJSON = require('../ethereum/artifacts/contracts/Marketplace.sol/Marketplace.json')
 const AuctionsJSON = require('../ethereum/artifacts/contracts/Auctions.sol/Auctions.json')
 
-export const _e = (wei) => Number(ethers.utils.formatEther(wei))
-export const _w = (ether) => ethers.utils.parseEther(ether)
+export const _e = (wei) => {
+    if (!wei) return 0
+    return Number(ethers.utils.formatEther(wei))
+
+}
+export const _w = (ether) => {
+    if (!ether) return 0
+    return ethers.utils.parseEther(ether)
+}
 
 export const getTappContract = (signer) => {
     return new ethers.Contract(process.env.NEXT_PUBLIC_LOCAL_TAPP, TappJSON.abi, signer)
