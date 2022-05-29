@@ -19,6 +19,7 @@ contract ERC721e is ERC721, IERC721Receiver, IERC721e {
 
     // TokenId->OfferId->Index of OfferId in Nft.offers array
     mapping(uint256 => mapping(uint256 => uint256)) private _offersIndex;
+    mapping(address => bool) public approvedAllContracts;
 
     address userContract;
     address marketplaceContract;
@@ -66,12 +67,10 @@ contract ERC721e is ERC721, IERC721Receiver, IERC721e {
         view
         returns (NFT[] memory)
     {
-        require(_tokenIds.length > 0, "ERC721e: Pass some values");
         NFT[] memory tokens = new NFT[](_tokenIds.length);
         for (uint256 i; i < _tokenIds.length; i++) {
             tokens[i] = _tokens[_tokenIds[i]];
         }
-
         return tokens;
     }
 
@@ -82,6 +81,10 @@ contract ERC721e is ERC721, IERC721Receiver, IERC721e {
         onlyOwner
         returns (uint256)
     {
+        return _mint(_uri);
+    }
+
+    function _mint(string calldata _uri) internal returns (uint256) {
         tokenCount++;
 
         NFT storage token = _tokens[tokenCount];
@@ -96,15 +99,18 @@ contract ERC721e is ERC721, IERC721Receiver, IERC721e {
 
         IUser(userContract).addNft(msg.sender, address(this), tokenCount);
 
-        setApprovalForAll(marketplaceContract, true);
-        setApprovalForAll(offersContract, true);
-        setApprovalForAll(auctionsContract, true);
-
         token.contractAddress = address(this);
 
         emit Transfer(address(0), msg.sender, tokenCount);
 
         return tokenCount;
+    }
+
+    function approveAllContracts() public {
+        setApprovalForAll(marketplaceContract, true);
+        setApprovalForAll(offersContract, true);
+        setApprovalForAll(auctionsContract, true);
+        approvedAllContracts[msg.sender] = true;
     }
 
     function userTransferFrom(
@@ -168,25 +174,23 @@ contract ERC721e is ERC721, IERC721Receiver, IERC721e {
         nft.offers.pop();
     }
 
-    function setAuction(uint _tokenId, uint _auctionId) public{
+    function setAuction(uint256 _tokenId, uint256 _auctionId) public {
         address _owner = ownerOf(_tokenId);
         require(
             _isAuthorized(_owner, _tokenId),
             "ERC721: You can't set auction"
         );
-        require(
-            _auctionId!=0,
-            "ERC721: Invalid Auction Id"
-        );
-        _tokens[_tokenId].auctionId=_auctionId;
+        require(_auctionId != 0, "ERC721: Invalid Auction Id");
+        _tokens[_tokenId].auctionId = _auctionId;
     }
-    function resetAuction(uint _tokenId) public{
+
+    function resetAuction(uint256 _tokenId) public {
         address _owner = ownerOf(_tokenId);
         require(
             _isAuthorized(_owner, _tokenId),
             "ERC721: You can't reset auction"
         );
-        _tokens[_tokenId].auctionId=0;
+        _tokens[_tokenId].auctionId = 0;
     }
 
     function getTokensList() public view returns (NFT[] memory) {

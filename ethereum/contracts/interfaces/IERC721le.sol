@@ -7,6 +7,7 @@ interface IERC721le is IERC721e{
         uint256 id;
         string uri;
         address creator;
+        address contractAddress;
         bool minted;
     }
     event LazyTokenCreated(

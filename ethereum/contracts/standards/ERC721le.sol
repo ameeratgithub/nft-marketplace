@@ -41,7 +41,7 @@ contract ERC721le is ERC721e, IERC721le {
         tapp = IERC20(_tapp);
     }
 
-    function addLazyToken(string calldata _uri, uint256 _price) public {
+    function addLazyToken(string calldata _uri, uint256 _price) public onlyOwner {
         _addLazyToken(_uri, _price);
 
         emit LazyTokenCreated(msg.sender, _uri, lazyTokenCount);
@@ -50,7 +50,6 @@ contract ERC721le is ERC721e, IERC721le {
     function mintLazyToken(uint256 _tokenId, string calldata _uri)
         public
         validLazyToken(_tokenId)
-        onlyOwner
     {
         LazyNFT storage lazyToken = lazyTokens[_tokenId];
         require(
@@ -58,7 +57,7 @@ contract ERC721le is ERC721e, IERC721le {
             "ERC721le: Please approve use to spend tokens"
         );
         tapp.transferFrom(msg.sender, address(this), lazyToken.price);
-        uint256 tokenId = mint(_uri);
+        uint256 tokenId = _mint(_uri);
         require(tokenId > 0, "ERC721le: Minting failed");
         lazyToken.minted = true;
         _tokens[tokenId].creator = lazyToken.creator;
@@ -74,7 +73,7 @@ contract ERC721le is ERC721e, IERC721le {
     }
 
     function addLazyTokens(string[] calldata _uris, uint256[] calldata _prices)
-        public
+        public onlyOwner
     {
         require(_uris.length > 0, "ERC721le: Provide some uris");
         require(
@@ -100,7 +99,8 @@ contract ERC721le is ERC721e, IERC721le {
             creator: msg.sender,
             uri: _uri,
             price: _price,
-            minted: false
+            minted: false,
+            contractAddress: address(this)
         });
 
         lazyTokens[lazyTokenCount] = lazyToken;

@@ -166,6 +166,7 @@ contract Auctions is Ownable {
             "Auctions: You can't cancel auction now"
         );
 
+        IERC721e(auction.contractAddress).resetAuction(auction.tokenId);
         IERC721(auction.contractAddress).transferFrom(
             address(this),
             msg.sender,
@@ -174,8 +175,11 @@ contract Auctions is Ownable {
 
         auction.cancelled = true;
         cancelledAuctionsCount++;
-        IERC721e(auction.contractAddress).resetAuction(auction.tokenId);
         _hasAuctionStarted[auction.contractAddress][auction.tokenId] = false;
+    }
+
+    function isExpired(uint256 _id) public view returns (bool) {
+        return auctions[_id].endBlock <= block.number;
     }
 
     function endAuction(uint256 _id) public {
@@ -196,16 +200,24 @@ contract Auctions is Ownable {
 
         auction.ended = true;
         endedAuctionsCount++;
-        bidderAuctionAmount[auction.highestBid.bidder][_id] = 0;
-        _hasAuctionStarted[auction.contractAddress][auction.tokenId] = false;
-        tapp.transfer(auction.seller, auction.highestBid.price);
-        IERC721e(auction.contractAddress).resetAuction(auction.tokenId);
 
-        IERC721e(auction.contractAddress).userTransferFrom(
-            address(this),
-            auction.highestBid.bidder,
-            auction.tokenId
-        );
+        IERC721e(auction.contractAddress).resetAuction(auction.tokenId);
+        _hasAuctionStarted[auction.contractAddress][auction.tokenId] = false;
+        if (auction.highestBid.bidder != address(0)) {
+            bidderAuctionAmount[auction.highestBid.bidder][_id] = 0;
+            tapp.transfer(auction.seller, auction.highestBid.price);
+            IERC721e(auction.contractAddress).userTransferFrom(
+                address(this),
+                auction.highestBid.bidder,
+                auction.tokenId
+            );
+        } else {
+            IERC721e(auction.contractAddress).transferFrom(
+                address(this),
+                auction.seller,
+                auction.tokenId
+            );
+        }
     }
 
     function withdraw(uint256 _id) public {
@@ -241,7 +253,7 @@ contract Auctions is Ownable {
         );
 
         for (uint256 i; i < auctionsCount; i++) {
-            Auction auction = auctions[i + 1];
+            Auction memory auction = auctions[i + 1];
             if (!auction.ended && !auction.cancelled) {
                 _auctions[i] = auction;
             }
