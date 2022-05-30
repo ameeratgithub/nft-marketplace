@@ -177,6 +177,19 @@ contract ERC721e is ERC721, IERC721Receiver, IERC721e {
         _offersIndex[nft.id][nft.offers[index]] = index;
         nft.offers.pop();
     }
+    function resetOffers(uint256 _tokenId) public {
+        address _owner = ownerOf(_tokenId);
+        require(
+            _isAuthorized(_owner, _tokenId),
+            "ERC721: You can't reset offers"
+        );
+
+        // NFT storage nft = _tokens[_tokenId];
+        // uint256 index = _offersIndex[_tokenId][_offerId];
+        // nft.offers[index] = nft.offers[nft.offers.length - 1];
+        // _offersIndex[nft.id][nft.offers[index]] = index;
+        _tokens[_tokenId].offers=new uint[](0);
+    }
 
     function setAuction(uint256 _tokenId, uint256 _auctionId) public {
         address _owner = ownerOf(_tokenId);

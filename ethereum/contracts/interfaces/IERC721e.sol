@@ -39,6 +39,7 @@ interface IERC721e is IERC721 {
     ) external;
 
     function deleteOffer(uint256 _tokenId, uint256 _offerId) external;
+    function resetOffers(uint256 _tokenId) external;
     function setAuction(uint _tokenId, uint _auctionId) external;
     function resetAuction(uint _tokenId) external;
 }

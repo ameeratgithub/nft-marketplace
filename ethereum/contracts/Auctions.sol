@@ -45,7 +45,7 @@ contract Auctions is Ownable {
     // Bidder -> Auction ID -> Yes/No
     mapping(address => mapping(uint256 => bool)) public alreadyParticipated;
 
-    mapping(address => uint256) public bidderAuctions;
+    mapping(address => uint256[]) public bidderAuctions;
 
     // Bidder -> Auction ID -> Amount Invested
     mapping(address => mapping(uint256 => uint256)) public bidderAuctionAmount;
@@ -148,7 +148,7 @@ contract Auctions is Ownable {
         auction.bids.push(bid);
 
         if (!alreadyParticipated[msg.sender][_id]) {
-            bidderAuctions[msg.sender] = _id;
+            bidderAuctions[msg.sender].push(_id);
             alreadyParticipated[msg.sender][_id] = true;
             bidderAuctionCount[msg.sender]++;
         }
@@ -242,7 +242,7 @@ contract Auctions is Ownable {
         Auction[] memory myAuctions = new Auction[](myAuctionsCount);
 
         for (uint256 i; i < myAuctionsCount; i++) {
-            myAuctions[i] = auctions[bidderAuctions[msg.sender]];
+            myAuctions[i] = auctions[bidderAuctions[msg.sender][i]];
         }
         return myAuctions;
     }
@@ -256,10 +256,13 @@ contract Auctions is Ownable {
             auctionsCount - cancelledAuctionsCount - endedAuctionsCount
         );
 
+        uint256 currentIndex = 0;
+
         for (uint256 i; i < auctionsCount; i++) {
             Auction memory auction = auctions[i + 1];
             if (!auction.ended && !auction.cancelled) {
-                _auctions[i] = auction;
+                _auctions[currentIndex] = auction;
+                currentIndex++;
             }
         }
         return _auctions;

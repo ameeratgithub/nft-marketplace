@@ -18,12 +18,14 @@ contract Offers is Ownable {
         address contractAddress;
         bool cancelled;
         bool declined;
+        bool accepted;
     }
     uint256 offersCount;
 
     IERC20 tapp;
 
     mapping(uint256 => Offer) public offers;
+    mapping(address => uint256[]) public myOffers;
 
     function createOffer(
         uint256 _tokenId,
@@ -51,6 +53,7 @@ contract Offers is Ownable {
         offer.contractAddress = _contractAddress;
         offer.tokenId = _tokenId;
         offer.offeror = msg.sender;
+        myOffers[msg.sender].push(offersCount);
     }
 
     function setTappContract(address _tappAddress) public onlyOwner {
@@ -78,19 +81,30 @@ contract Offers is Ownable {
 
     function acceptOffer(uint256 _id) public {
         Offer storage offer = offers[_id];
-        
+
         require(
             IERC721(offer.contractAddress).ownerOf(offer.tokenId) == msg.sender,
             "Offers: You can't accept offer"
         );
-        
+
         tapp.transferFrom(offer.offeror, msg.sender, offer.price);
 
+        IERC721e(offer.contractAddress).resetOffers(offer.tokenId);
+        offer.accepted = true;
         IERC721e(offer.contractAddress).userTransferFrom(
             msg.sender,
             offer.offeror,
             offer.tokenId
         );
+    }
+
+    function getMyOffers() public view returns (Offer[] memory) {
+        uint256 myOffersCount = myOffers[msg.sender].length;
+        Offer[] memory _offers = new Offer[](myOffersCount);
+        for (uint256 i; i < myOffersCount; i++) {
+            _offers[i] = offers[myOffers[msg.sender][i]];
+        }
+        return _offers;
     }
 
     function getOffersByIds(uint256[] calldata _ids)
@@ -101,7 +115,7 @@ contract Offers is Ownable {
         Offer[] memory _offers = new Offer[](_ids.length);
 
         for (uint256 i = 0; i < _ids.length; i++) {
-            _offers[i] = offers[i + 1];
+            _offers[i] = offers[_ids[i]];
         }
         return _offers;
     }
