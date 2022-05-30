@@ -18,6 +18,10 @@ export default ({ }) => {
     const { tapp: { balance, limit } } = useDappProvider()
     const { loadTappData } = useUpdatedDappProvider()
 
+    useEffect(() => {
+        if (address)
+            loadTappData()
+    }, [address])
 
     const _mint = async () => {
         if (Number(amount) > limit || Number(amount) <= 0) return
@@ -31,8 +35,8 @@ export default ({ }) => {
         loadTappData()
     }
     return <Layout>
-        { !address && <ConnectWallet withWrapper={true}/>}
-        { address &&<Container sx={{ display: 'flex', mt: '80px' }}>
+        {!address && <ConnectWallet withWrapper={true} />}
+        {address && <Container sx={{ display: 'flex', mt: '80px' }}>
             <Container sx={{ width: '40%' }}>
                 <Typography variant="h5" sx={{ mb: '10px' }}>Current Balance</Typography>
                 <Chip label={` ${balance} Tapps `} sx={{ mb: '10px', fontSize: '15px', fontWeight: 'bold' }} />

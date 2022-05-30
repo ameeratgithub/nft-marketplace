@@ -3,6 +3,7 @@ import { Divider, Grid, Typography } from "@mui/material"
 import { useEffect, useState } from "react"
 import { getBidderAuctionAmount, withdrawFromAuction } from "../../apis/auctions"
 import { _e } from "../../utils/ethers"
+import { useUpdatedDappProvider } from "../../utils/providers"
 import { useWeb3 } from "../../utils/web3-context"
 import { MintingPaper } from "../collections/CreateCollectionForm"
 import Alert from "../common/Alert"
@@ -12,6 +13,7 @@ export default ({ bidAuctions, onSuccess }) => {
     const [withdrawButtonLoading, setWithdrawButtonLoading] = useState(false)
 
     const { signer, address, loading, provider } = useWeb3()
+    // const { loadTappData } = useUpdatedDappProvider()
 
     const [isSnackbarOpen, setIsSnackbarOpen] = useState(false)
     const [alert, setAlert] = useState({})
@@ -42,6 +44,7 @@ export default ({ bidAuctions, onSuccess }) => {
             showAlert('Amount successfully transferred to your account')
             setWithdrawButtonLoading(false)
             onSuccess()
+            // loadTappData()
         } catch (err) {
             setWithdrawButtonLoading(false)
             console.log(err)
@@ -70,7 +73,9 @@ export default ({ bidAuctions, onSuccess }) => {
         <Divider />
         {bidAuctions.length > 0 ? bidAuctions.reverse().map((a, i) => {
             const amountToWithdraw = Number(_e(bidderAuctionAmounts[i]?.toString()))
-            const myHighestBidPrice = Number(_e(a.bids.filter(b => b.bidder === address)[a.bids.length - 1].price.toString()))
+            const myBids = a.bids.filter(b => b.bidder === address)
+            // console.log("Amount To Withdraw", amountToWithdraw)
+            const myHighestBidPrice = Number(_e(myBids[myBids.length - 1].price.toString()))
             const highestBidPrice = Number(_e(a.highestBid.price.toString()))
             const endBlock = Number(a.endBlock.toString())
 
@@ -113,6 +118,6 @@ export default ({ bidAuctions, onSuccess }) => {
                     {!action && `N/A`}
                 </Grid>
             </Grid>
-        }) : <Typography sx={{mt:'20px'}}>You haven't participated in any auction yet</Typography>}
+        }) : <Typography sx={{ mt: '20px' }}>You haven't participated in any auction yet</Typography>}
     </MintingPaper>
 }

@@ -108,10 +108,10 @@ export default ({ children }) => {
         let provider, signer
         if (window.ethereum) {
             provider = new ethers.providers.Web3Provider(window.ethereum, 'any')
-            window.ethereum.on('accountsChanged', (accounts) => {
+            window.ethereum.once('accountsChanged', (accounts) => {
                 loadAccount()
             })
-            window.ethereum.on('chainChanged', function (chainId) {
+            window.ethereum.once('chainChanged', function (chainId) {
                 const desiredChainId = getDesiredChainId()
                 if (chainId !== desiredChainId) {
                     switchNetwork()

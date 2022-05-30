@@ -184,9 +184,8 @@ export default ({ web3StorageKey }) => {
         }
 
         const items = await getMyBidAuctions(signer)
-
-        console.log("Auction Items:",items)
-        const _itemsPromise = items.filter(i => !i.cancelled && !i.ended).map(i => {
+        console.log("Auction Items", items)
+        const _itemsPromise = items.map(i => {
             return getAuction(i.id.toString(), signer)
         })
         const _bidAuctions = await Promise.all(_itemsPromise)
@@ -195,7 +194,7 @@ export default ({ web3StorageKey }) => {
 
         let nfts = []
         for (const contractAddress in groupedItems) {
-            const tokenIds = groupedItems[contractAddress].map(i => i.tokenId.toString());
+            const tokenIds = groupedItems[contractAddress].filter(i => !i.ended && !i.cancelled).map(i => i.tokenId.toString());
             const contractTokens = await tokensByIds721(tokenIds, contractAddress, signer)
             nfts = [...nfts, ...contractTokens]
         }
@@ -535,7 +534,7 @@ export default ({ web3StorageKey }) => {
                         <Grid container spacing={12} sx={{ mt: '-40px', mb: '40px' }}>
                             {bidTokens?.length > 0 ? bidTokens?.map(t => <Grid item xs={12} md={4} lg={3} xl={3} key={t.id.toString()}>
                                 <NFTItem nft={t} onMint={loadProfileData} />
-                            </Grid>) : <Grid item><Typography variant="subtitle1">You haven't placed any bid</Typography></Grid>}
+                            </Grid>) : <Grid item><Typography variant="subtitle1">You don't have active bids. You can check status of your previous bids by clicking 'Auctions Status' button</Typography></Grid>}
                         </Grid>
                     </TabPanel>}
                 </Box>
