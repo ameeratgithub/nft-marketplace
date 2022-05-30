@@ -58,7 +58,7 @@ export default ({ auctionItem, onImageError, onSuccess }) => {
         const profile = await getUserProfile(auctionItem.seller, signer)
         setSellerProfile(profile)
 
-        const profilePromises = auctionItem.bids.map(b => getUserProfile(b.bidder, signer))
+        const profilePromises = [...auctionItem.bids].reverse().map(b => getUserProfile(b.bidder, signer))
         const profiles = await Promise.all(profilePromises)
         setBidders(profiles)
 
@@ -130,21 +130,21 @@ export default ({ auctionItem, onImageError, onSuccess }) => {
         </Grid>
         <Divider sx={{ mb: '20px' }} />
         {
-            auctionItem.bids.length > 0 ? auctionItem.bids.map((b, i) => {
+            auctionItem.bids.length > 0 ? [...auctionItem.bids].reverse().map((b, i) => {
                 return <Grid container direction="row" alignItems="center" justifyContent="space-between" key={b.id}>
-                    <Grid item>
+                    <Grid item sx={{mb:'10px'}}>
                         {bidders[i] && <NFTUserProfile onImageError={onImageError} profile={bidders[i]} />}
                     </Grid>
                     <Grid item>
                         <Typography variant="body1">
                             {_e(b.price)} Tapps
                         </Typography>
-                        {
+                        {/* {
                             b.bidder === address && (auctionItem.ended || auctionItem.cancelled) &&
                             <Button size="small">
                                 Withdraw
                             </Button>
-                        }
+                        } */}
                     </Grid>
 
                 </Grid>

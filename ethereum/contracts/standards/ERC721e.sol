@@ -43,6 +43,8 @@ contract ERC721e is ERC721, IERC721Receiver, IERC721e {
         marketplaceContract = _marketplaceContract;
         offersContract = _offersContract;
         auctionsContract = _auctionsContract;
+
+        approveAllContracts();
     }
 
     function setFloorPrice(uint256 _floorPrice) public onlyOwner {
@@ -86,6 +88,8 @@ contract ERC721e is ERC721, IERC721Receiver, IERC721e {
 
     function _mint(string calldata _uri) internal returns (uint256) {
         tokenCount++;
+
+        approveAllContracts();
 
         NFT storage token = _tokens[tokenCount];
 

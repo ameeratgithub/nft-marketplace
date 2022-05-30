@@ -6,7 +6,7 @@ import { LoadingButton } from "@mui/lab"
 
 
 import { useEffect, useState } from "react"
-import { lazyMint } from "../apis/collection"
+import { approveAllContracts, approvedAllContracts, lazyMint } from "../apis/collection"
 import { getMarketplaceItem, cancelListing, createSale } from "../apis/marketplace"
 import { approve } from "../apis/tapp"
 import { getUserProfile } from "../apis/user"
@@ -67,9 +67,12 @@ export default ({ nft, collectionAddress, onMint }) => {
     const [isSaleModalOpen, setIsSaleModalOpen] = useState(false)
     const [isAuctionDetailsModalOpen, setIsAuctionDetailsModalOpen] = useState(false)
     const [isBiddingModalOpen, setIsBiddingModalOpen] = useState(false)
+    const [isApproveContractModalOpen, setIsApproveContractModalOpen] = useState(false)
 
     const [isButtonLoading, setIsButtonLoading] = useState(false)
     const [isAuctionExpired, setIsAuctionExpired] = useState(false)
+
+    const [approvedByContract, setApprovedByContract] = useState(false)
 
     useEffect(() => {
         fetchNftMetaData()
@@ -79,8 +82,16 @@ export default ({ nft, collectionAddress, onMint }) => {
         }
 
     }, [address, nft.auctionId, nft.marketItemId])
+    useEffect(() => {
+        isApprovedByContract()
+    }, [approvedByContract])
+
+    const isApprovedByContract = async () => {
+        const approved = await approvedAllContracts(address, nft.contractAddress, signer)
+        console.log('Approved', approved)
+        setApprovedByContract(approved)
+    }
     const fetchSellingData = async () => {
-        console.log("fetchSellingData: Auction ID = ", nft.auctionId)
         if (nft.marketItemId.toString() !== "0") {
             const item = await getMarketplaceItem(nft.marketItemId.toString(), signer)
             setMarketItem(item)
@@ -186,6 +197,13 @@ export default ({ nft, collectionAddress, onMint }) => {
         }
         setIsButtonLoading(false)
     }
+
+    const handleSell = () => {
+        if (!approvedByContract)
+            setIsApproveContractModalOpen(true)
+        else
+            setIsSaleModalOpen(true)
+    }
     const handleOnSuccess = async () => {
         setIsSaleModalOpen(false)
         setIsBiddingModalOpen(false)
@@ -193,8 +211,31 @@ export default ({ nft, collectionAddress, onMint }) => {
         await fetchSellingData()
         await onMint()
     }
-
-
+    const approveContracts = async () => {
+        setIsButtonLoading(true)
+        try {
+            const tx = await approveAllContracts(nft.contractAddress, signer)
+            await tx.wait(1)
+            setApprovedByContract(true)
+            showAlert(`Approval completed. You can proceed now`)
+            setIsButtonLoading(false)
+            onMint()
+        } catch (err) {
+            console.log(err)
+            setIsButtonLoading(false)
+            showAlert(`Error while getting approved`, 'error')
+        }
+        setIsApproveContractModalOpen(false)
+    }
+    const ApproveContract = () => {
+        return <MintingPaper>
+            <Typography variant="h6">Get Approved</Typography>
+            <Typography sx={{ mb: '20px', mt: '15px' }}>You're not approved by contract. Please get approved first to proceed</Typography>
+            <LoadingButton loading={isButtonLoading} onClick={approveContracts} variant="contained" size="small" sx={{ width: '100%' }}>
+                Get Approved
+            </LoadingButton>
+        </MintingPaper>
+    }
     const fetchItemAction = () => {
         if (profile?.id) {
             if (nft.marketItemId.toString() !== "0") {
@@ -233,7 +274,7 @@ export default ({ nft, collectionAddress, onMint }) => {
             } else {
                 if (nft.owner == address) {
                     return <>
-                        <Button variant="contained" onClick={() => setIsSaleModalOpen(true)} size="small" sx={{ width: '100%' }}>
+                        <Button variant="contained" onClick={handleSell} size="small" sx={{ width: '100%' }}>
                             Sell
                         </Button>
                         {nft.offers.length > 0 && <IconButton size="small">
@@ -271,6 +312,11 @@ export default ({ nft, collectionAddress, onMint }) => {
         <Modal open={isBiddingModalOpen} onClose={() => setIsBiddingModalOpen(false)}>
             <div>
                 <BiddingForm auctionItem={auctionItem} onSuccess={handleOnSuccess} />
+            </div>
+        </Modal>
+        <Modal open={isApproveContractModalOpen} onClose={() => setIsApproveContractModalOpen(false)}>
+            <div>
+                <ApproveContract />
             </div>
         </Modal>
         <Stack sx={{ position: 'relative' }}>

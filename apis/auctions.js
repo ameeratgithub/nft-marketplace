@@ -19,13 +19,25 @@ export const endAuction = (id, signer) => {
     const auctions = getAuctionsContract(signer)
     return auctions.endAuction(id)
 }
-export const withdraw = (id, signer) => {
+export const getBidderAuctionAmount=(address, id, signer)=>{
+    const auctions = getAuctionsContract(signer)
+    return auctions.bidderAuctionAmount(address, id)
+}
+export const withdrawFromAuction = (id, signer) => {
     const auctions = getAuctionsContract(signer)
     return auctions.withdraw(id)
 }
 export const getAuction = (id, signer) => {
     const auctions = getAuctionsContract(signer)
     return auctions.getAuction(id)
+}
+export const getAuctions = ( signer) => {
+    const auctions = getAuctionsContract(signer)
+    return auctions.getAuctions()
+}
+export const getMyBidAuctions = ( signer) => {
+    const auctions = getAuctionsContract(signer)
+    return auctions.getMyBidAuctions()
 }
 export const hasParticipated = (id, signer) => {
     const auctions = getAuctionsContract(signer)

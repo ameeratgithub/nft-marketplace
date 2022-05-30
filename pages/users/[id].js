@@ -6,7 +6,7 @@ import { changeCover, changeName, changePicture, getAllTokens, getUserProfileByI
 import { getUserCollections } from "../../apis/collections"
 
 import { ownerOf721, tokensByIds721 } from "../../apis/collection"
-import { Button, Chip, Grid, IconButton, Menu, MenuItem, Modal, Paper, Stack, Tab, Tabs, TextField, Tooltip, Typography } from "@mui/material"
+import { Button, Chip, Divider, Grid, IconButton, Menu, MenuItem, Modal, Paper, Stack, Tab, Tabs, TextField, Tooltip, Typography } from "@mui/material"
 import NFTItem from "../../components/NFTItem"
 import { Box, styled } from "@mui/system"
 import { Box as MaterialBox } from "@mui/material"
@@ -17,7 +17,10 @@ import Alert from "../../components/common/Alert"
 import CollectionCard from "../../components/collections/CollectionCard"
 import PropTypes from 'prop-types';
 import { getMarketplaceItem } from "../../apis/marketplace"
-import { getAuction } from "../../apis/auctions"
+import { getAuction, getMyBidAuctions, withdrawFromAuction } from "../../apis/auctions"
+import { groupBy } from "../../utils/common"
+import { _e } from "../../utils/ethers"
+import AuctionsStatus from "../../components/auctions.js/AuctionsStatus"
 
 
 
@@ -74,6 +77,7 @@ export default ({ web3StorageKey }) => {
     const [openNameModal, setOpenNameModal] = useState(false)
     const [openPictureModal, setOpenPictureModal] = useState(false)
     const [openCoverModal, setOpenCoverModal] = useState(false)
+    const [openAuctionStatusModal, setOpenAuctionStatusModal] = useState(false)
 
     const ipfsGateway = process.env.NEXT_PUBLIC_IPFS_GATEWAY
     const client = new Web3Storage({ token: web3StorageKey })
@@ -99,17 +103,24 @@ export default ({ web3StorageKey }) => {
     const { id } = router.query
     const [collections, setCollections] = useState([])
 
-    const { signer, address, loading } = useWeb3()
+    const { signer, address, loading, provider } = useWeb3()
     const [profile, setProfile] = useState({})
     const [tokens, setTokens] = useState([])
+    const [bidTokens, setBidTokens] = useState([])
+    const [bidAuctions, setBidAuctions] = useState([])
 
     useEffect(() => {
-        if (address) loadProfileData()
-    }, [address, loading])
 
-
+        if (address) {
+            setTabValue(0)
+            loadProfileData()
+        }
+    }, [address, loading, id, router.query.id])
     const handleTabChange = (event, newValue) => {
-        setTabValue(newValue);
+        if (profile.userAddress !== address && newValue > 1) {
+            setTabValue(0)
+        } else
+            setTabValue(newValue);
     };
 
 
@@ -130,16 +141,20 @@ export default ({ web3StorageKey }) => {
         setAlert({})
     }
     useEffect(() => {
-        if (profile.id) getNfts()
+        if (profile.id) {
+            getCollections()
+            getNfts()
+            getBidTokens()
+        }
     }, [profile])
 
     const loadProfileData = async () => {
-        await getProfile()
-        await getCollections()
-        console.log("Users: Profile data loaded")
+        getProfile()
     }
     const getCollections = async () => {
-        const _collections = await getUserCollections(address, signer)
+
+        const _collections = await getUserCollections(profile.userAddress, signer)
+        console.log("Collections", _collections)
         setCollections(_collections)
     }
     const getProfile = async () => {
@@ -162,6 +177,31 @@ export default ({ web3StorageKey }) => {
 
         setTokens(...nfts)
 
+    }
+    const getBidTokens = async () => {
+        if (profile.userAddress !== address) {
+            return
+        }
+
+        const items = await getMyBidAuctions(signer)
+
+        console.log("Auction Items:",items)
+        const _itemsPromise = items.filter(i => !i.cancelled && !i.ended).map(i => {
+            return getAuction(i.id.toString(), signer)
+        })
+        const _bidAuctions = await Promise.all(_itemsPromise)
+
+        const groupedItems = groupBy(items, 'contractAddress')
+
+        let nfts = []
+        for (const contractAddress in groupedItems) {
+            const tokenIds = groupedItems[contractAddress].map(i => i.tokenId.toString());
+            const contractTokens = await tokensByIds721(tokenIds, contractAddress, signer)
+            nfts = [...nfts, ...contractTokens]
+        }
+
+        setBidAuctions(_bidAuctions)
+        setBidTokens(nfts)
     }
 
     const _buildPromises = (collections) => {
@@ -286,6 +326,7 @@ export default ({ web3StorageKey }) => {
         setButtonLoading(false)
         setOpenCoverModal(false)
     }
+
 
     const SettingMenu = <Menu
         anchorEl={anchorEl}
@@ -425,12 +466,20 @@ export default ({ web3StorageKey }) => {
                 </MintingPaper>
             </div>
         </Modal>
+        <Modal open={openAuctionStatusModal} onClose={() => setOpenAuctionStatusModal(false)}>
+            <div>
+                <AuctionsStatus bidAuctions={bidAuctions} onSuccess={() => {
+                    loadProfileData()
+                    setOpenAuctionStatusModal(false)
+                }} />
+            </div>
+        </Modal>
         {address && <BannerBox >
             <BannerImage src={profile.cover || process.env.NEXT_PUBLIC_IMAGE_404} />
 
             <Stack alignItems="center" sx={{ mt: "-60px" }}>
                 <ProfileImage src={profile.picture || process.env.NEXT_PUBLIC_IMAGE_404} />
-                <Typography variant="h6">{profile.name || 'DApp User'}</Typography>
+                <Typography variant="h6">{profile.name || 'User#' + profile.id}</Typography>
                 <Stack direction="row" >
                     <Chip sx={{ ml: '30px' }} variant="outlined" label={`${profile.userAddress?.slice(0, 6)}...${profile.userAddress?.slice(-4)}`} />
                     {profile.userAddress === address && <Tooltip title="Account settings">
@@ -456,6 +505,7 @@ export default ({ web3StorageKey }) => {
                         <Tabs value={tabValue} onChange={handleTabChange} aria-label="basic tabs example">
                             <Tab label={`Owned (${tokens?.length || 0})`} />
                             <Tab label={`Collections (${collections?.length || 0})`} />
+                            {profile.userAddress === address && <Tab label={`My Bids (${bidTokens?.length || 0})`} />}
                         </Tabs>
                     </MaterialBox>
                     <TabPanel value={tabValue} index={0}>
@@ -476,6 +526,18 @@ export default ({ web3StorageKey }) => {
                             }
                         </Grid>
                     </TabPanel>
+                    {profile.userAddress === address && <TabPanel value={tabValue} index={2}>
+                        <Grid container direction="row" justifyContent="flex-end" sx={{ mt: '20px' }}>
+                            <Grid item>
+                                <Button variant="contained" size="small" onClick={() => setOpenAuctionStatusModal(true)}>Auctions Status</Button>
+                            </Grid>
+                        </Grid>
+                        <Grid container spacing={12} sx={{ mt: '-40px', mb: '40px' }}>
+                            {bidTokens?.length > 0 ? bidTokens?.map(t => <Grid item xs={12} md={4} lg={3} xl={3} key={t.id.toString()}>
+                                <NFTItem nft={t} onMint={loadProfileData} />
+                            </Grid>) : <Grid item><Typography variant="subtitle1">You haven't placed any bid</Typography></Grid>}
+                        </Grid>
+                    </TabPanel>}
                 </Box>
 
             </Stack>

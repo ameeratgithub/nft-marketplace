@@ -45,7 +45,7 @@ contract Auctions is Ownable {
     // Bidder -> Auction ID -> Yes/No
     mapping(address => mapping(uint256 => bool)) public alreadyParticipated;
 
-    mapping(address => Auction) public bidderAuctions;
+    mapping(address => uint256) public bidderAuctions;
 
     // Bidder -> Auction ID -> Amount Invested
     mapping(address => mapping(uint256 => uint256)) public bidderAuctionAmount;
@@ -63,6 +63,10 @@ contract Auctions is Ownable {
     function hasParticipated(uint256 _id) public view returns (bool) {
         return alreadyParticipated[msg.sender][_id];
     }
+
+    // function myAuctionAmount(uint256 _id) public view returns (uint256) {
+    //     return bidderAuctionAmount[msg.sender][_id];
+    // }
 
     function startAuction(
         uint256 _tokenId,
@@ -144,7 +148,7 @@ contract Auctions is Ownable {
         auction.bids.push(bid);
 
         if (!alreadyParticipated[msg.sender][_id]) {
-            bidderAuctions[msg.sender] = auction;
+            bidderAuctions[msg.sender] = _id;
             alreadyParticipated[msg.sender][_id] = true;
             bidderAuctionCount[msg.sender]++;
         }
@@ -178,9 +182,9 @@ contract Auctions is Ownable {
         _hasAuctionStarted[auction.contractAddress][auction.tokenId] = false;
     }
 
-    function isExpired(uint256 _id) public view returns (bool) {
-        return auctions[_id].endBlock <= block.number;
-    }
+    // function isExpired(uint256 _id) public view returns (bool) {
+    //     return auctions[_id].endBlock <= block.number;
+    // }
 
     function endAuction(uint256 _id) public {
         Auction storage auction = auctions[_id];
@@ -238,7 +242,7 @@ contract Auctions is Ownable {
         Auction[] memory myAuctions = new Auction[](myAuctionsCount);
 
         for (uint256 i; i < myAuctionsCount; i++) {
-            myAuctions[i] = bidderAuctions[msg.sender];
+            myAuctions[i] = auctions[bidderAuctions[msg.sender]];
         }
         return myAuctions;
     }

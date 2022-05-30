@@ -24,9 +24,7 @@ export default ({ }) => {
         let nfts = []
         for (const nftContract in groupedItems) {
             const tokenIds = groupedItems[nftContract].map(i => i.tokenId.toString());
-            console.log(nftContract, tokenIds)
             const contractTokens = await tokensByIds721(tokenIds, nftContract, signer)
-            console.log(contractTokens)
             nfts = [...nfts, ...contractTokens]
         }
 
@@ -46,7 +44,7 @@ export default ({ }) => {
                 </Link>}
             </Grid>
         </Grid>
-        <Grid container direction="row" spacing={12} sx={{ mt: '-10px', mb: '40px' }}>
+        <Grid container direction="row" spacing={12} sx={{ mt: '-30px', mb: '40px' }}>
             {tokens?.length > 0 ? tokens?.map(t => <Grid item xs={12} md={4} lg={3} xl={3} key={t.id.toString()}>
                 <NFTItem nft={t} onMint={handleCallBack} />
             </Grid>) : <Grid item><Typography variant="subtitle1">No Listing Item Found</Typography></Grid>}
