@@ -10,6 +10,7 @@ interface IUser {
         string cover;
         address userAddress;
         // Collection Address -> Token Ids
+        mapping(address => mapping(uint256 => bool)) onceHeldNFT;
         mapping(address => uint256[]) ownedNfts;
         mapping(address => bool) collectionExists;
         address[] collections;

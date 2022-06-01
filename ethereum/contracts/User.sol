@@ -73,8 +73,10 @@ contract User is IUser {
             profile.collections.push(_collectionAddress);
             profile.collectionExists[_collectionAddress] = true;
         }
-
-        profile.ownedNfts[_collectionAddress].push(_tokenId);
+        if (!profile.onceHeldNFT[_collectionAddress][_tokenId]) {
+            profile.ownedNfts[_collectionAddress].push(_tokenId);
+            profile.onceHeldNFT[_collectionAddress][_tokenId] = true;
+        }
     }
 
     function getAllTokens(uint256 _id)
