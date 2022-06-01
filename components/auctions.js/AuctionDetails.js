@@ -47,7 +47,7 @@ export default function Auction({ auctionItem, onImageError, onSuccess }) {
         if (currentBlock >= endBlock) {
             setEndTime(0)
         } else {
-            const minutes = ((endBlock - currentBlock) * 5) / 60
+            const minutes = ((endBlock - currentBlock) * process.env.NEXT_PUBLIC_BLOCK_TIME) / 60
             if (parseInt(minutes) < 1) {
                 setEndTime(Math.round(minutes * 10) / 10)
             } else {

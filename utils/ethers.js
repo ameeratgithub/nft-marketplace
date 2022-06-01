@@ -17,26 +17,43 @@ export const _w = (ether) => {
     if (!ether) return 0
     return ethers.utils.parseEther(ether)
 }
+let tappAddress, userAddress, collectionsAddres, marketplaceAddress, auctionsAddress, offersAddress
+if (process.env.NEXT_PUBLIC_APP_ENV === 'production') {
+    tappAddress = process.env.NEXT_PUBLIC_TESTNET_TAPP
+    userAddress = process.env.NEXT_PUBLIC_TESTNET_USER
+    collectionsAddres = process.env.NEXT_PUBLIC_TESTNET_COLLECTIONS
+    marketplaceAddress = process.env.NEXT_PUBLIC_TESTNET_MARKETPLACE
+    auctionsAddress = process.env.NEXT_PUBLIC_TESTNET_AUCTIONS
+    offersAddress = process.env.NEXT_PUBLIC_TESTNET_OFFERS
+}
+else if (process.env.NEXT_PUBLIC_APP_ENV === 'development') {
+    tappAddress = process.env.NEXT_PUBLIC_LOCAL_TAPP
+    userAddress = process.env.NEXT_PUBLIC_LOCAL_USER
+    collectionsAddres = process.env.NEXT_PUBLIC_LOCAL_COLLECTIONS
+    marketplaceAddress = process.env.NEXT_PUBLIC_LOCAL_MARKETPLACE
+    auctionsAddress = process.env.NEXT_PUBLIC_LOCAL_AUCTIONS
+    offersAddress = process.env.NEXT_PUBLIC_LOCAL_OFFERS
+}
 
 export const getTappContract = (signer) => {
-    return new ethers.Contract(process.env.NEXT_PUBLIC_LOCAL_TAPP, TappJSON.abi, signer)
+    return new ethers.Contract(tappAddress, TappJSON.abi, signer)
 }
 export const getUserContract = (signer) => {
-    return new ethers.Contract(process.env.NEXT_PUBLIC_LOCAL_USER, UserJSON.abi, signer)
+    return new ethers.Contract(userAddress, UserJSON.abi, signer)
 }
 export const getCollectionsContract = (signer) => {
-    return new ethers.Contract(process.env.NEXT_PUBLIC_LOCAL_COLLECTIONS, CollectionsJSON.abi, signer)
+    return new ethers.Contract(collectionsAddres, CollectionsJSON.abi, signer)
 }
 export const getERC721Contract = (address, signer) => {
     return new ethers.Contract(address, ERC721JSON.abi, signer)
 }
 
 export const getMarketplaceContract = (signer) => {
-    return new ethers.Contract(process.env.NEXT_PUBLIC_LOCAL_MARKETPLACE, MarketplaceJSON.abi, signer)
+    return new ethers.Contract(marketplaceAddress, MarketplaceJSON.abi, signer)
 }
 export const getAuctionsContract = (signer) => {
-    return new ethers.Contract(process.env.NEXT_PUBLIC_LOCAL_AUCTIONS, AuctionsJSON.abi, signer)
+    return new ethers.Contract(auctionsAddress, AuctionsJSON.abi, signer)
 }
 export const getOffersContract = (signer) => {
-    return new ethers.Contract(process.env.NEXT_PUBLIC_LOCAL_OFFERS, OffersJSON.abi, signer)
+    return new ethers.Contract(offersAddress, OffersJSON.abi, signer)
 }
