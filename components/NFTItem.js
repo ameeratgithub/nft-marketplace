@@ -1,6 +1,6 @@
 
 import { Button, Chip, Divider, Grid, IconButton, LinearProgress, Modal, Paper, Stack, TextField, Typography } from "@mui/material"
-import { styled } from "@mui/system"
+import { Box, styled } from "@mui/system"
 import Link from "next/link"
 import { LoadingButton } from "@mui/lab"
 
@@ -58,6 +58,7 @@ export default ({ nft, collectionAddress, onMint }) => {
     const fallBackImage = process.env.NEXT_PUBLIC_IMAGE_404
     const [nftMeta, setNftMeta] = useState({})
     const [profile, setProfile] = useState({})
+    const [sellerProfile, setSellerProfile] = useState({})
     const [isSnackbarOpen, setIsSnackbarOpen] = useState(false)
     const { signer, address, provider } = useWeb3()
     const [alert, setAlert] = useState({})
@@ -98,16 +99,18 @@ export default ({ nft, collectionAddress, onMint }) => {
     const fetchSellingData = async () => {
         if (nft.marketItemId.toString() !== "0") {
             const item = await getMarketplaceItem(nft.marketItemId.toString(), signer)
+            const p = await getUserProfile(item.seller, signer)
+            setSellerProfile(p)
             setMarketItem(item)
         }
         if (nft.auctionId.toString() !== "0") {
             const item = await getAuction(nft.auctionId.toString(), signer)
+            const p = await getUserProfile(item.seller, signer)
+
             const currentBlock = await provider.getBlockNumber()
             const endBlock = Number(item.endBlock.toString())
 
-            console.log("fetchSellingData::Current Block:", currentBlock)
-            console.log("fetchSellingData::End Block:", endBlock)
-
+            setSellerProfile(p)
             setIsAuctionExpired(currentBlock >= endBlock)
             setAuctionItem(item)
         }
@@ -300,7 +303,7 @@ export default ({ nft, collectionAddress, onMint }) => {
 
     }
 
-
+    const ownerProfile = sellerProfile.id ? sellerProfile : profile;
     return <>
         <Modal open={isSaleModalOpen} onClose={() => setIsSaleModalOpen(false)}>
             <div>
@@ -330,8 +333,8 @@ export default ({ nft, collectionAddress, onMint }) => {
         </Modal>
         <Modal open={isOffersDetailModalOpen} onClose={() => setIsOffersDetailModalOpen(false)}>
             <div>
-                {nft.offers?.length>0 && <OfferDetails nft={nft} onImageError={onImageError}
-                    onSuccess={()=>{
+                {nft.offers?.length > 0 && <OfferDetails nft={nft} onImageError={onImageError}
+                    onSuccess={() => {
                         setIsOffersDetailModalOpen(false)
                         handleOnSuccess()
                     }} />}
@@ -342,6 +345,10 @@ export default ({ nft, collectionAddress, onMint }) => {
 
             <NFTImage src={nftMeta.image || fallBackImage} alt={nftMeta.name} sx={{ boxShadow: 4 }}
                 onError={onImageError} />
+            {nft.owner && ownerProfile.id && <Box sx={{ position: 'absolute', top: '250px', right: '0', zIndex: 1 }}>
+                <NFTUserProfile
+                    profile={ownerProfile} onImageError={onImageError} hideName={true} />
+            </Box>}
             <Paper sx={{ padding: '15px', position: 'relative', left: "10px", top: '-10px' }} elevation={5}>
                 <Stack sx={{ padding: '2px', pt: '15px' }}>
                     <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between">
@@ -352,7 +359,7 @@ export default ({ nft, collectionAddress, onMint }) => {
 
                     <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between"
                         sx={{ mt: '10px' }}>
-                        {/* {nft.owner && profile.id && <NFTUserProfile profile={profile} onImageError={onImageError} />} */}
+
                         {
                             fetchItemAction()
                         }
@@ -364,12 +371,12 @@ export default ({ nft, collectionAddress, onMint }) => {
 
 }
 
-export const NFTUserProfile = ({ profile, onImageError }) => {
+export const NFTUserProfile = ({ profile, onImageError, hideName }) => {
     return <Link href={`/users/${profile.id}`} passHref>
         <a style={{ display: 'flex', color: 'inherit', textDecoration: 'none', alignItems: 'center' }}>
             <ProfileImage src={profile.picture} alt={profile.name || profile.userAddress}
                 onError={onImageError} />
-            <Typography variant="body2" style={{ marginLeft: '10px' }}>{profile.name || `User#${profile.id}`}</Typography>
+            {!hideName && <Typography variant="body2" style={{ marginLeft: '10px' }}>{profile.name || `User#${profile.id}`}</Typography>}
         </a>
     </Link>
 }
