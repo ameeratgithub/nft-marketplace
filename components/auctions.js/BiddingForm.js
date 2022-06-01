@@ -8,7 +8,7 @@ import { useWeb3 } from "../../utils/web3-context"
 import { MintingPaper } from "../collections/CreateCollectionForm"
 import Alert from "../common/Alert"
 
-export default ({ auctionItem, onSuccess }) => {
+export default function BiddingForm({ auctionItem, onSuccess }) {
 
     const [isButtonLoading, setIsButtonLoading] = useState(false)
 

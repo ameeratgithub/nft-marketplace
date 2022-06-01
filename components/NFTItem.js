@@ -54,7 +54,7 @@ export const AttributeBar = ({ value, title }) => {
         </Grid>
     </Stack>
 }
-export default ({ nft, collectionAddress, onMint }) => {
+export default function NFTItem ({ nft, collectionAddress, onMint }){
     const fallBackImage = process.env.NEXT_PUBLIC_IMAGE_404
     const [nftMeta, setNftMeta] = useState({})
     const [profile, setProfile] = useState({})
@@ -237,7 +237,7 @@ export default ({ nft, collectionAddress, onMint }) => {
     const ApproveContract = () => {
         return <MintingPaper>
             <Typography variant="h6">Get Approved</Typography>
-            <Typography sx={{ mb: '20px', mt: '15px' }}>You're not approved by contract. Please get approved first to proceed</Typography>
+            <Typography sx={{ mb: '20px', mt: '15px' }}>You&apos;re not approved by contract. Please get approved first to proceed</Typography>
             <LoadingButton loading={isButtonLoading} onClick={approveContracts} variant="contained" size="small" sx={{ width: '100%' }}>
                 Get Approved
             </LoadingButton>

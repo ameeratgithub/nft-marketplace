@@ -1,7 +1,7 @@
 import { useWeb3Update } from "../../utils/web3-context"
 import { Button, Stack, Typography } from "@mui/material"
 
-export default ({ withWrapper }) => {
+export default function ConnectWallet({ withWrapper }){
     const connect = useWeb3Update()
 
     const button = <Button variant="contained" sx={{ width: '65%' }} onClick={connect}>

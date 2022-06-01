@@ -11,7 +11,7 @@ import Alert from "../common/Alert"
 
 import { LoadingButton } from '@mui/lab'
 
-export default ({ auctionItem, onImageError, onSuccess }) => {
+export default function Auction({ auctionItem, onImageError, onSuccess }) {
     const [sellerProfile, setSellerProfile] = useState({})
     const [participated, setParticipated] = useState(false)
     const [endTime, setEndTime] = useState(0)

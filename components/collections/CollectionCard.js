@@ -1,6 +1,6 @@
 import { Card, CardActionArea, CardContent, CardMedia, Typography } from "@mui/material"
 import Link from 'next/link';
-export default ({ collection }) => {
+export default function CollectionCard ({ collection }){
     const { id, name, description, bannerUri, collectionAddress, owner, collectionType } = collection
     
     const descString = description.length > 90 ? description.substring(0, 90) + "..." : description

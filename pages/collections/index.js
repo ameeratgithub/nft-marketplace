@@ -8,7 +8,7 @@ import Layout from "../../components/layout"
 import { useWeb3 } from "../../utils/web3-context"
 
 
-export default ({ web3StorageKey }) => {
+export default function Index({ web3StorageKey }) {
     const [collections, setCollections] = useState([])
     const { signer, address, loading } = useWeb3()
 

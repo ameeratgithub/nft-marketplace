@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { useWeb3 } from '../../utils/web3-context'
 import ResponsiveAppBar from './Navbar'
 
-export default function ({ children }) {
+export default function Index ({ children }) {
 
     const [isOpen, setIsOpen] = useState(false)
     const [profile, setProfile] = useState({})

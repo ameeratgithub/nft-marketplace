@@ -17,7 +17,7 @@ import Alert from "../common/Alert"
 //     width: '50%'
 // })
 
-export default ({ web3StorageKey, collectionAddress, onSuccess }) => {
+export default function CreateNFTForm({ web3StorageKey, collectionAddress, onSuccess }) {
 
     const client = new Web3Storage({ token: web3StorageKey })
     const ipfsGateway = process.env.NEXT_PUBLIC_IPFS_GATEWAY

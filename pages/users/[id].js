@@ -73,7 +73,7 @@ TabPanel.propTypes = {
 };
 
 
-export default ({ web3StorageKey }) => {
+export default function Id({ web3StorageKey }) {
 
     const [openNameModal, setOpenNameModal] = useState(false)
     const [openPictureModal, setOpenPictureModal] = useState(false)
@@ -569,7 +569,7 @@ export default ({ web3StorageKey }) => {
                         <Grid container spacing={12} sx={{ mt: '-40px', mb: '40px' }}>
                             {bidTokens?.length > 0 ? bidTokens?.map(t => <Grid item xs={12} md={4} lg={3} xl={3} key={t.id.toString()}>
                                 <NFTItem nft={t} onMint={loadProfileData} />
-                            </Grid>) : <Grid item><Typography variant="subtitle1">You don't have active bids. You can check status of your previous bids by clicking 'Auctions Status' button</Typography></Grid>}
+                            </Grid>) : <Grid item><Typography variant="subtitle1">You don&apos;t have active bids. You can check status of your previous bids by clicking &apos;Auctions Status&apos; button</Typography></Grid>}
                         </Grid>
                     </TabPanel>}
                     {profile.userAddress === address && <TabPanel value={tabValue} index={3}>
@@ -623,7 +623,7 @@ export default ({ web3StorageKey }) => {
                                     </Grid>
 
                                 </Grid>
-                            }) : <Grid item><Typography variant="subtitle1">You haven't created any offer yet</Typography></Grid>}
+                            }) : <Grid item><Typography variant="subtitle1">You haven&apos;t created any offer yet</Typography></Grid>}
                         </Grid>
                     </TabPanel>}
                 </Box>

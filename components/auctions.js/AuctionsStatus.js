@@ -8,7 +8,7 @@ import { useWeb3 } from "../../utils/web3-context"
 import { MintingPaper } from "../collections/CreateCollectionForm"
 import Alert from "../common/Alert"
 
-export default ({ bidAuctions, onSuccess }) => {
+export default function AuctionsStatus ({ bidAuctions, onSuccess }){
     const [currentBlock, setCurrentBlock] = useState(0)
     const [withdrawButtonLoading, setWithdrawButtonLoading] = useState(false)
 
@@ -118,6 +118,6 @@ export default ({ bidAuctions, onSuccess }) => {
                     {!action && `N/A`}
                 </Grid>
             </Grid>
-        }) : <Typography sx={{ mt: '20px' }}>You haven't participated in any auction yet</Typography>}
+        }) : <Typography sx={{ mt: '20px' }}>You haven&apos;t participated in any auction yet</Typography>}
     </MintingPaper>
 }

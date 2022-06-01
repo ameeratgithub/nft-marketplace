@@ -19,7 +19,7 @@ const Banner = styled('img')({
     height: 'inherit', width: 'inherit', objectFit: 'cover', zIndex: -10
 })
 
-export default ({ web3StorageKey }) => {
+export default function Collection ({ web3StorageKey }) {
     const router = useRouter()
 
     const { signer, address, loading } = useWeb3()

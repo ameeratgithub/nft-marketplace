@@ -10,7 +10,7 @@ import { useWeb3 } from "../utils/web3-context"
 import { useDappProvider, useUpdatedDappProvider } from "../utils/providers"
 import { LoadingButton } from "@mui/lab"
 
-export default ({ }) => {
+export default function Faucet ({ }) {
     const [amount, setAmount] = useState('1')
     const [loading, setLoading] = useState(false)
 

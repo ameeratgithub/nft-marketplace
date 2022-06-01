@@ -12,7 +12,7 @@ import Alert from "../common/Alert"
 import { LoadingButton } from '@mui/lab'
 import { acceptOffer, declineOffer, getOffersByIds } from "../../apis/offers"
 
-export default ({ nft, onImageError, onSuccess }) => {
+export default function OfferDetails({ nft, onImageError, onSuccess }){
     // const [sellerProfile, setSellerProfile] = useState({})
     // const [participated, setParticipated] = useState(false)
     // const [endTime, setEndTime] = useState(0)

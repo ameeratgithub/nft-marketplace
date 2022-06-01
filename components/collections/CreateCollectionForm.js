@@ -16,7 +16,7 @@ export const MintingPaper = styled(Paper)({
     width: '50%'
 })
 
-export default ({ web3StorageKey, onSuccess }) => {
+export default function CreateCollectionForm ({ web3StorageKey, onSuccess }){
 
     const client = new Web3Storage({ token: web3StorageKey })
     const ipfsGateway = process.env.NEXT_PUBLIC_IPFS_GATEWAY

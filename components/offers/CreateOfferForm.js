@@ -8,7 +8,7 @@ import { useWeb3 } from "../../utils/web3-context"
 import { MintingPaper } from "../collections/CreateCollectionForm"
 import Alert from "../common/Alert"
 
-export default ({ nft, onSuccess }) => {
+export default function CreateOfferForm ({ nft, onSuccess }){
 
     const { signer, address } = useWeb3()
 

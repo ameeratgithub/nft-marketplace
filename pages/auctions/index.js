@@ -9,7 +9,7 @@ import ConnectWallet from "../../components/common/ConnectWallet"
 import Link from 'next/link'
 import { getAuctions } from "../../apis/auctions"
 
-export default ({ }) => {
+export default function Index() {
     const { signer, address, profile } = useWeb3()
     const [tokens, setTokens] = useState({})
 

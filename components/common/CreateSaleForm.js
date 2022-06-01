@@ -15,7 +15,7 @@ const SaleChip = styled(Chip)({
     padding: '10px'
 
 })
-export default ({ nft, onSuccess }) => {
+export default function CreateSaleForm ({ nft, onSuccess }){
 
     const { signer, address } = useWeb3()
 
