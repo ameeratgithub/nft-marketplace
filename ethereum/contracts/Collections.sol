@@ -36,6 +36,8 @@ contract Collections {
 
     mapping(uint256 => Collection) private _collections;
 
+    mapping(address => uint256) public collectionIds;
+
     mapping(address => uint256[]) private _userCollections;
 
     address private _tapp;
@@ -236,6 +238,7 @@ contract Collections {
             collectionType: _type,
             description: _description
         });
+        collectionIds[_collection] = collectionCount;
         _userCollections[msg.sender].push(collectionCount);
     }
 }

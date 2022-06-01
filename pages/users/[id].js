@@ -17,7 +17,8 @@ import Alert from "../../components/common/Alert"
 import CollectionCard from "../../components/collections/CollectionCard"
 import PropTypes from 'prop-types';
 import { getMarketplaceItem } from "../../apis/marketplace"
-import { getAuction, getMyBidAuctions, withdrawFromAuction } from "../../apis/auctions"
+import { getAuction, getMyBidAuctions } from "../../apis/auctions"
+import { getMyOffers, cancelOffer } from "../../apis/offers"
 import { groupBy } from "../../utils/common"
 import { _e } from "../../utils/ethers"
 import AuctionsStatus from "../../components/auctions.js/AuctionsStatus"
@@ -108,6 +109,8 @@ export default ({ web3StorageKey }) => {
     const [tokens, setTokens] = useState([])
     const [bidTokens, setBidTokens] = useState([])
     const [bidAuctions, setBidAuctions] = useState([])
+    const [myOffers, setMyOffers] = useState([])
+    const [myOfferTokens, setMyOfferTokens] = useState([])
 
     useEffect(() => {
 
@@ -145,8 +148,11 @@ export default ({ web3StorageKey }) => {
             getCollections()
             getNfts()
             getBidTokens()
+            fetchMyOffers()
         }
     }, [profile])
+
+
 
     const loadProfileData = async () => {
         getProfile()
@@ -160,7 +166,23 @@ export default ({ web3StorageKey }) => {
     const getProfile = async () => {
         const _profile = await getUserProfileById(id, signer)
         setProfile(_profile)
+    }
+    const fetchMyOffers = async () => {
+        if (profile.userAddress !== address) {
+            return
+        }
+        const offers = [...await getMyOffers(signer)].reverse()
+        const groupedOffers = groupBy(offers, 'contractAddress')
 
+        let offerTokens = []
+        for (const contractAddress in groupedOffers) {
+            const tokenIds = groupedOffers[contractAddress].map(i => i.tokenId.toString());
+            const contractTokens = await tokensByIds721(tokenIds, contractAddress, signer)
+            offerTokens = [...offerTokens, ...contractTokens]
+        }
+
+        setMyOfferTokens(offerTokens)
+        setMyOffers(offers)
 
     }
     const getNfts = async () => {
@@ -184,7 +206,6 @@ export default ({ web3StorageKey }) => {
         }
 
         const items = await getMyBidAuctions(signer)
-        console.log("Auction Items", items)
         const _itemsPromise = items.map(i => {
             return getAuction(i.id.toString(), signer)
         })
@@ -326,6 +347,19 @@ export default ({ web3StorageKey }) => {
         setOpenCoverModal(false)
     }
 
+    const cancelMyOffer = async (offerId) => {
+        setButtonLoading(true)
+        try {
+            const tx = await cancelOffer(offerId, signer)
+            await tx.wait(1)
+            showAlert({ message: 'Offer cancelled' })
+            loadProfileData()
+            fetchMyOffers()
+        } catch (err) {
+            showAlert({ message: 'Unable to cancel offer', type: 'error' })
+        }
+        setButtonLoading(false)
+    }
 
     const SettingMenu = <Menu
         anchorEl={anchorEl}
@@ -505,6 +539,7 @@ export default ({ web3StorageKey }) => {
                             <Tab label={`Owned (${tokens?.length || 0})`} />
                             <Tab label={`Collections (${collections?.length || 0})`} />
                             {profile.userAddress === address && <Tab label={`My Bids (${bidTokens?.length || 0})`} />}
+                            {profile.userAddress === address && <Tab label={`My Offers (${myOffers?.length || 0})`} />}
                         </Tabs>
                     </MaterialBox>
                     <TabPanel value={tabValue} index={0}>
@@ -535,6 +570,60 @@ export default ({ web3StorageKey }) => {
                             {bidTokens?.length > 0 ? bidTokens?.map(t => <Grid item xs={12} md={4} lg={3} xl={3} key={t.id.toString()}>
                                 <NFTItem nft={t} onMint={loadProfileData} />
                             </Grid>) : <Grid item><Typography variant="subtitle1">You don't have active bids. You can check status of your previous bids by clicking 'Auctions Status' button</Typography></Grid>}
+                        </Grid>
+                    </TabPanel>}
+                    {profile.userAddress === address && <TabPanel value={tabValue} index={3}>
+                        <Grid container direction="column" spacing={12} sx={{ mt: '-40px', mb: '40px' }}>
+                            {myOffers?.length > 0 ? myOffers?.map((o, i) => {
+                                let status
+                                if (o.declined) {
+                                    status = 'declined'
+                                } else if (o.cancelled) {
+                                    status = 'cancelled'
+                                } else if (o.accepted) {
+                                    status = 'accepted'
+                                }
+                                else {
+                                    status = 'unanswered'
+                                }
+                                return <Grid item key={o.id.toString()}>
+                                    <Grid container spacing={12} justifyContent="center">
+                                        <Grid item xs={12} md={4} lg={3} xl={3} >
+                                            <NFTItem nft={myOfferTokens[i]} onMint={loadProfileData} />
+                                        </Grid>
+                                        <Grid item md={6} lg={4} xl={4} >
+                                            <Stack sx={{ height: '80%' }} direction="column" justifyContent="space-between">
+                                                <Grid container>
+                                                    <Grid item md={6} lg={6}><Typography sx={{ fontWeight: 'bold' }}>Offer ID:</Typography></Grid>
+                                                    <Grid item md={6} lg={6}><Typography>{o.id.toString()}</Typography></Grid>
+                                                </Grid>
+                                                <Grid container>
+                                                    <Grid item md={6} lg={6}><Typography sx={{ fontWeight: 'bold' }}>Status:</Typography></Grid>
+                                                    <Grid item md={6} lg={6}><Typography>{status}</Typography></Grid>
+                                                </Grid>
+                                                <Grid container>
+                                                    <Grid item md={6} lg={6}><Typography sx={{ fontWeight: 'bold' }}>Price:</Typography></Grid>
+                                                    <Grid item md={6} lg={6}><Typography>{_e(o.price.toString())} Tapps</Typography></Grid>
+                                                </Grid>
+                                                <Grid container>
+                                                    <Grid item md={6} lg={6}><Typography sx={{ fontWeight: 'bold' }}>Token Id:</Typography></Grid>
+                                                    <Grid item md={6} lg={6}><Typography>{o.tokenId.toString()}</Typography></Grid>
+                                                </Grid>
+                                                <Grid container>
+                                                    <Grid item md={6} lg={6}>
+                                                        {status === 'unanswered' && <LoadingButton loading={buttonLoading}
+                                                            variant="contained" size="small" onClick={() => cancelMyOffer(o.id)}>
+                                                            Cancel Offer
+                                                        </LoadingButton>}
+                                                    </Grid>
+
+                                                </Grid>
+                                            </Stack>
+                                        </Grid>
+                                    </Grid>
+
+                                </Grid>
+                            }) : <Grid item><Typography variant="subtitle1">You haven't created any offer yet</Typography></Grid>}
                         </Grid>
                     </TabPanel>}
                 </Box>

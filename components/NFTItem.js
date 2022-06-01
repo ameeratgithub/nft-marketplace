@@ -22,6 +22,8 @@ import { MintingPaper } from "./collections/CreateCollectionForm"
 import { ethers } from "ethers"
 import BiddingForm from "./auctions.js/BiddingForm"
 import AuctionDetails from "./auctions.js/AuctionDetails"
+import CreateOfferForm from "./offers/CreateOfferForm"
+import OfferDetails from "./offers/OfferDetails"
 
 
 
@@ -68,6 +70,8 @@ export default ({ nft, collectionAddress, onMint }) => {
     const [isAuctionDetailsModalOpen, setIsAuctionDetailsModalOpen] = useState(false)
     const [isBiddingModalOpen, setIsBiddingModalOpen] = useState(false)
     const [isApproveContractModalOpen, setIsApproveContractModalOpen] = useState(false)
+    const [isCreateOfferModalOpen, setIsCreateOfferModalOpen] = useState(false)
+    const [isOffersDetailModalOpen, setIsOffersDetailModalOpen] = useState(false)
 
     const [isButtonLoading, setIsButtonLoading] = useState(false)
     const [isAuctionExpired, setIsAuctionExpired] = useState(false)
@@ -81,7 +85,7 @@ export default ({ nft, collectionAddress, onMint }) => {
             fetchSellingData()
         }
 
-    }, [address, nft.auctionId, nft.marketItemId])
+    }, [address, nft.auctionId, nft.marketItemId, nft.offers])
     useEffect(() => {
         isApprovedByContract()
     }, [approvedByContract])
@@ -277,13 +281,13 @@ export default ({ nft, collectionAddress, onMint }) => {
                         <Button variant="contained" onClick={handleSell} size="small" sx={{ width: '100%' }}>
                             Sell
                         </Button>
-                        {nft.offers.length > 0 && <IconButton size="small">
+                        {nft.offers.length > 0 && <IconButton size="small" onClick={() => setIsOffersDetailModalOpen(true)}>
                             <InfoOutlined fontSize="small" />
                         </IconButton>}
                     </>
                 }
                 else {
-                    return <Button variant="contained" size="small" sx={{ width: '100%' }}>
+                    return <Button onClick={() => setIsCreateOfferModalOpen(true)} variant="contained" size="small" sx={{ width: '100%' }}>
                         Create Offer
                     </Button>
                 }
@@ -317,6 +321,20 @@ export default ({ nft, collectionAddress, onMint }) => {
         <Modal open={isApproveContractModalOpen} onClose={() => setIsApproveContractModalOpen(false)}>
             <div>
                 <ApproveContract />
+            </div>
+        </Modal>
+        <Modal open={isCreateOfferModalOpen} onClose={() => setIsCreateOfferModalOpen(false)}>
+            <div>
+                <CreateOfferForm nft={nft} onSuccess={handleOnSuccess} />
+            </div>
+        </Modal>
+        <Modal open={isOffersDetailModalOpen} onClose={() => setIsOffersDetailModalOpen(false)}>
+            <div>
+                {nft.offers?.length>0 && <OfferDetails nft={nft} onImageError={onImageError}
+                    onSuccess={()=>{
+                        setIsOffersDetailModalOpen(false)
+                        handleOnSuccess()
+                    }} />}
             </div>
         </Modal>
         <Stack sx={{ position: 'relative' }}>

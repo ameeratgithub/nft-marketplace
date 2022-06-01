@@ -6,6 +6,7 @@ const CollectionsJSON = require('../ethereum/artifacts/contracts/Collections.sol
 const ERC721JSON = require('../ethereum/artifacts/contracts/standards/ERC721le.sol/ERC721le.json')
 const MarketplaceJSON = require('../ethereum/artifacts/contracts/Marketplace.sol/Marketplace.json')
 const AuctionsJSON = require('../ethereum/artifacts/contracts/Auctions.sol/Auctions.json')
+const OffersJSON = require('../ethereum/artifacts/contracts/Offers.sol/Offers.json')
 
 export const _e = (wei) => {
     if (!wei) return 0
@@ -35,4 +36,7 @@ export const getMarketplaceContract = (signer) => {
 }
 export const getAuctionsContract = (signer) => {
     return new ethers.Contract(process.env.NEXT_PUBLIC_LOCAL_AUCTIONS, AuctionsJSON.abi, signer)
+}
+export const getOffersContract = (signer) => {
+    return new ethers.Contract(process.env.NEXT_PUBLIC_LOCAL_OFFERS, OffersJSON.abi, signer)
 }
