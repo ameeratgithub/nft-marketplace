@@ -2,10 +2,12 @@ require("@nomiclabs/hardhat-waffle");
 require('dotenv').config()
 
 
-const fs = require("fs");
-let rawdata = fs.readFileSync("H:/Practice/Secret/private_keys.json");
+// const fs = require("fs");
+// let rawdata = fs.readFileSync("H:/Practice/Secret/private_keys.json");
 
-const PRIVATE_KEY = JSON.parse(rawdata).account4;
+// const PRIVATE_KEY = JSON.parse(rawdata).account4;
+const { PRIVATE_KEY } = process.env;
+
 
 const alchemyMumbaiEndPoint = `https://polygon-mumbai.g.alchemy.com/v2/${process.env.ALCHEMY_MUMBAI_KEY}`
 const infuraRinkeby = `https://rinkeby.infura.io/v3/${process.env.INFURA_RINKEBY_KEY}`;
