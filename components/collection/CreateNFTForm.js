@@ -103,16 +103,18 @@ export default function CreateNFTForm({ web3StorageKey, collectionAddress, onSuc
             showAlert({ message: 'Metadata is saved on IPFS. It may take a while to show metadata (image, name)' })
             const uri = `https://${rootCID}.${ipfsGateway}/metadata.json`;
             console.log("URI for NFT is", uri)
-
-            if (mintNow) await mint(uri, collectionAddress, signer)
-            else await lazyAdd(uri, _w(price), collectionAddress, signer)
+            let tx
+            if (mintNow) tx = await mint(uri, collectionAddress, signer)
+            else tx = await lazyAdd(uri, _w(price), collectionAddress, signer)
+            await tx.wait(1)
+            setButtonLoading(false)
             onSuccess()
         } catch (err) {
             console.log(err)
-            hideAlert()
+            setButtonLoading(false)
             showAlert({ message: 'Error while creating nft', type: 'error' })
         }
-        setButtonLoading(false)
+
     }
 
     return <MintingPaper>

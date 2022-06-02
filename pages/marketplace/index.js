@@ -12,7 +12,7 @@ import ConnectWallet from "../../components/common/ConnectWallet"
 import Link from 'next/link'
 
 export default function Index ({ }) {
-    const { signer, address, profile } = useWeb3()
+    const { signer, address, profile, loading } = useWeb3()
     const [tokens, setTokens] = useState({})
 
     useEffect(() => {
@@ -36,7 +36,7 @@ export default function Index ({ }) {
         await loadMarketplaceData()
     }
     return <Layout>
-        {!address && <ConnectWallet withWrapper={true} />}
+        {!address && !loading && <ConnectWallet withWrapper={true} />}
 
         {
             address && <>

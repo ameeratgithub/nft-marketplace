@@ -96,7 +96,7 @@ function switchNetwork() {
 
 export default ({ children }) => {
     const [context, setContext] = useState({ provider: null, signer: null, address: '', profile: {} })
-    const [contextLoading, setContextLoading] = useState(false)
+    const [contextLoading, setContextLoading] = useState(true)
 
     useEffect(() => {
         initializeWeb3Modal()
@@ -104,7 +104,6 @@ export default ({ children }) => {
 
     const loadAccount = async () => {
         console.log("Load Account Called")
-        setContextLoading(true)
         let provider, signer
         if (window.ethereum) {
             provider = new ethers.providers.Web3Provider(window.ethereum, 'any')

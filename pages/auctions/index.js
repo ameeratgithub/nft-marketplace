@@ -10,7 +10,7 @@ import Link from 'next/link'
 import { getAuctions } from "../../apis/auctions"
 
 export default function Index() {
-    const { signer, address, profile } = useWeb3()
+    const { signer, address, profile,loading } = useWeb3()
     const [tokens, setTokens] = useState({})
 
     useEffect(() => {
@@ -34,7 +34,7 @@ export default function Index() {
         await loadAuctionsData()
     }
     return <Layout>
-        {!address && <ConnectWallet withWrapper={true} />}
+        {!address && !loading && <ConnectWallet withWrapper={true} />}
 
         {
             address && <>

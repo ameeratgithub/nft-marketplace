@@ -10,32 +10,33 @@ import { useWeb3 } from "../utils/web3-context"
 import { useDappProvider, useUpdatedDappProvider } from "../utils/providers"
 import { LoadingButton } from "@mui/lab"
 
-export default function Faucet ({ }) {
+export default function Faucet({ }) {
     const [amount, setAmount] = useState('1')
-    const [loading, setLoading] = useState(false)
+    const [buttonLoading, setButtonLoading] = useState(false)
 
-    const { signer, address } = useWeb3()
+    const { signer, address, loading } = useWeb3()
     const { tapp: { balance, limit } } = useDappProvider()
     const { loadTappData } = useUpdatedDappProvider()
 
     useEffect(() => {
+        console.log("Loading:", loading, ", Address:", address)
         if (address)
             loadTappData()
-    }, [address])
+    }, [address,loading])
 
     const _mint = async () => {
         if (Number(amount) > limit || Number(amount) <= 0) return
-        setLoading(true)
+        setButtonLoading(true)
         try {
             const tx = await mint(_w(amount), signer)
             await tx.wait(1)
             setAmount('1')
         } catch (err) { }
-        setLoading(false)
+        setButtonLoading(false)
         loadTappData()
     }
     return <Layout>
-        {!address && <ConnectWallet withWrapper={true} />}
+        {!address && !loading && <ConnectWallet withWrapper={true} />}
         {address && <Container sx={{ display: 'flex', mt: '80px' }}>
             <Container sx={{ width: '40%' }}>
                 <Typography variant="h5" sx={{ mb: '10px' }}>Current Balance</Typography>
@@ -63,7 +64,7 @@ export default function Faucet ({ }) {
                     inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
                     onChange={e => setAmount(e.target.value)}
                 />
-                <LoadingButton loading={loading} variant="contained"
+                <LoadingButton loading={buttonLoading} variant="contained"
                     sx={{ mt: '20px' }} onClick={_mint}>
                     Mint
                 </LoadingButton>

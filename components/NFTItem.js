@@ -54,7 +54,7 @@ export const AttributeBar = ({ value, title }) => {
         </Grid>
     </Stack>
 }
-export default function NFTItem ({ nft, collectionAddress, onMint }){
+export default function NFTItem({ nft, collectionAddress, onMint }) {
     const fallBackImage = process.env.NEXT_PUBLIC_IMAGE_404
     const [nftMeta, setNftMeta] = useState({})
     const [profile, setProfile] = useState({})
@@ -135,16 +135,19 @@ export default function NFTItem ({ nft, collectionAddress, onMint }){
         setIsSnackbarOpen(false)
     }
     const approveTapps = async () => {
-        await approve(nft.contractAddress, nft.price, signer)
+        const tx = await approve(nft.contractAddress, nft.price, signer)
+        await tx.wait(1)
     }
     const mintLazy = async () => {
         if (balance < _e(nft.price)) {
             return showAlert(`You need ${_e(nft.price) - balance} more tapps to mint NFT`, 'warning')
         }
+        setIsButtonLoading(true)
         console.log(nft.contractAddress)
         if (!nft.contractAddress) return
         try {
             await approveTapps()
+            
             const tx = await lazyMint(nft.id, nft.uri, nft.contractAddress, signer)
             await tx.wait(1)
             showAlert(`NFT minted successfully`, 'info')
@@ -152,6 +155,7 @@ export default function NFTItem ({ nft, collectionAddress, onMint }){
             console.error(err)
             showAlert(`Error occured while minting NFT`, 'error')
         }
+        setIsButtonLoading(false)
         onMint()
     }
     const onImageError = ({ currentTarget }) => {
@@ -296,9 +300,9 @@ export default function NFTItem ({ nft, collectionAddress, onMint }){
                 }
             }
         } else if (!nft.minted && !nft.owner) {
-            return <Button variant="contained" size="small" onClick={mintLazy} sx={{ width: '100%' }}>
+            return <LoadingButton loading={isButtonLoading} variant="contained" size="small" onClick={mintLazy} sx={{ width: '100%' }}>
                 Mint
-            </Button>
+            </LoadingButton>
         }
 
     }

@@ -22,7 +22,7 @@ export default function Index({ web3StorageKey }) {
         setCollections(_collections)
     }
     return <Layout>
-        {!address && <ConnectWallet withWrapper={true} />}
+        {!address && !loading && <ConnectWallet withWrapper={true} />}
         {
             address && <>
                 <Modal open={openCreateModal} onClose={() => setOpenCreateModal(false)}>
