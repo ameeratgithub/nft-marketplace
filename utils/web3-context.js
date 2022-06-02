@@ -157,6 +157,7 @@ export default ({ children }) => {
             setContextLoading(false)
             return { provider, signer, address, profile }
         } catch (err) {
+            setContextLoading(false)
             console.log(err)
         }
 
