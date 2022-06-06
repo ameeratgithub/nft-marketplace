@@ -56,18 +56,22 @@ const initializeWeb3Modal = () => {
 
 }
 
-function switchNetwork() {
+async function switchNetwork() {
     const provider = window.ethereum
+    console.log('In switch Network')
     if (provider) {
         const chainId = ethers.utils.hexValue(getDesiredChainId())
         try {
-            provider.request({
+            
+            await provider.request({
                 method: 'wallet_switchEthereumChain',
                 params: [{ chainId }]
             })
+            console.log('Executing Try')
             // window.location.reload()
-            return true
+            // return true
         } catch (error) {
+            console.log("Catching error")
             if (error.code === 4902) {
                 provider.request({
                     method: "wallet_addEthereumChain",
@@ -108,9 +112,11 @@ export default ({ children }) => {
         if (window.ethereum) {
             provider = new ethers.providers.Web3Provider(window.ethereum, 'any')
             window.ethereum.once('accountsChanged', (accounts) => {
+                console.log("On Accounts Changed")
                 loadAccount()
             })
             window.ethereum.once('chainChanged', function (chainId) {
+                
                 const desiredChainId = getDesiredChainId()
                 if (chainId !== desiredChainId) {
                     switchNetwork()
@@ -133,7 +139,7 @@ export default ({ children }) => {
             provider = new ethers.providers.Web3Provider(proxy)
         }
 
-
+        
         signer = provider.getSigner()
 
         try {
