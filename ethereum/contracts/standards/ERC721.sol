@@ -88,10 +88,12 @@ contract ERC721 is IERC721, IERC721MetaData, ERC165 {
         uint256 _tokenId
     ) public {
         address owner = ownerOf(_tokenId);
+        
         require(
             _isAuthorized(owner, _tokenId),
             "ERC721::transferFrom:You're not authorized"
         );
+
         require(_from == owner, "ERC721::transferFrom:Invalid source");
         require(_to != address(0), "ERC721::transferFrom:Invalid recipient");
 
