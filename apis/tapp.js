@@ -1,23 +1,22 @@
 
-import { getTappContract } from '../utils/ethers'
+import { getTappContract, SignerContracts, TappContract } from '../utils/ethers'
 
 
 
 export const getUserBalance = (address, signer) => {
-    const tapp = getTappContract(signer)
-    return tapp.balanceOf(address)
+    return TappContract.balanceOf(address)
 }
 
 export const getLimit = (signer) => {
-    const tapp = getTappContract(signer)
-    return tapp.currentBalanceLimit()
+    return TappContract.currentBalanceLimit()
 }
+
 export const approve = (spender, amount, signer) => {
-    const tapp = getTappContract(signer)
-    return tapp.approve(spender, amount)
+    const signerTapp = SignerContracts.tappContract()
+    return signerTapp.approve(spender, amount)
 }
 
 export const mint = (amount, signer) => {
-    const tapp = getTappContract(signer)
-    return tapp.mint(amount)
+    const signerTapp = SignerContracts.tappContract()
+    return signerTapp.mint(amount)
 }

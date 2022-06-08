@@ -1,25 +1,23 @@
 
-import { getMarketplaceContract } from '../utils/ethers'
+import { getMarketplaceContract, MarketplaceContract, SignerContracts } from '../utils/ethers'
 
 
 
 export const getItemsOnSale = (signer) => {
-    const marketplace = getMarketplaceContract(signer)
-    return marketplace.getItemsOnSale()
+    return MarketplaceContract.getItemsOnSale()
 }
 export const createMarketItem = (price, nftContract, tokenId, signer) => {
-    const marketplace = getMarketplaceContract(signer)
+    const marketplace = SignerContracts.marketplaceContract()
     return marketplace.createMarketItem(price, nftContract, tokenId)
 }
 export const getMarketplaceItem = (id, signer) => {
-    const marketplace = getMarketplaceContract(signer)
-    return marketplace.items(id)
+    return MarketplaceContract.items(id)
 }
 export const cancelListing = (id, signer) => {
-    const marketplace = getMarketplaceContract(signer)
+    const marketplace = SignerContracts.marketplaceContract()
     return marketplace.cancelListing(id)
 }
 export const createSale = (id, signer) => {
-    const marketplace = getMarketplaceContract(signer)
+    const marketplace = SignerContracts.marketplaceContract()
     return marketplace.createSale(id)
 }

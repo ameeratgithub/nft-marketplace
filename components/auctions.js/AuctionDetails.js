@@ -41,9 +41,6 @@ export default function Auction({ auctionItem, onImageError, onSuccess }) {
         const currentBlock = await provider.getBlockNumber()
         const endBlock = Number(auctionItem.endBlock.toString())
 
-        console.log("AuctionDetails::Current Block:", currentBlock)
-        console.log("AuctionDetails::End Block:", endBlock)
-
         if (currentBlock >= endBlock) {
             setEndTime(0)
         } else {

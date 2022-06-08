@@ -200,6 +200,7 @@ export default function Id({ web3StorageKey }) {
         if (profile.userAddress !== address) {
             return
         }
+        
 
         const items = await getMyBidAuctions(signer)
         const _itemsPromise = items.map(i => {
@@ -215,7 +216,7 @@ export default function Id({ web3StorageKey }) {
             const contractTokens = await tokensByIds721(tokenIds, contractAddress, signer)
             nfts = [...nfts, ...contractTokens]
         }
-
+        
         setBidAuctions(_bidAuctions)
         setBidTokens(nfts)
     }

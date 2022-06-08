@@ -1,22 +1,19 @@
 
-import { getCollectionsContract } from '../utils/ethers'
+import { CollectionsContract, getCollectionsContract, SignerContracts } from '../utils/ethers'
 
 
 
 export const getAllCollections = (signer) => {
-    const collections = getCollectionsContract(signer)
-    return collections.getAllCollections()
+    return CollectionsContract.getAllCollections()
 }
 export const getCollection = (id, signer) => {
-    const collections = getCollectionsContract(signer)
-    return collections.getCollection(id)
+    return CollectionsContract.getCollection(id)
 }
 export const getUserCollections = (userAddress, signer) => {
-    const collections = getCollectionsContract(signer)
-    return collections.getUserCollections(userAddress)
+    return CollectionsContract.getUserCollections(userAddress)
 }
 
 export const createCollection = (cname, symbol, bannerUri, description, type, signer) => {
-    const collections = getCollectionsContract(signer)
+    const collections = SignerContracts.collectionsContract()
     return collections.createCollection(cname, symbol, bannerUri, description, type)
 }

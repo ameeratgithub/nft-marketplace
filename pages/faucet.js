@@ -28,13 +28,17 @@ export default function Faucet({ }) {
         if (!address && !loading) {
             return setOpenConnectModal(true)
         }
+        
         if (Number(amount) > limit || Number(amount) <= 0) return
+        console.log("Amount:", amount, ", limit:", limit)
         setButtonLoading(true)
         try {
             const tx = await mint(_w(amount), signer)
             await tx.wait(1)
             setAmount('1')
-        } catch (err) { }
+        } catch (err) { 
+            console.log(err)
+        }
         setButtonLoading(false)
         loadTappData()
     }

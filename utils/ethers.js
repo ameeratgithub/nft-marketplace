@@ -26,7 +26,7 @@ if (process.env.NEXT_PUBLIC_APP_ENV === 'production') {
     marketplaceAddress = process.env.NEXT_PUBLIC_TESTNET_MARKETPLACE
     auctionsAddress = process.env.NEXT_PUBLIC_TESTNET_AUCTIONS
     offersAddress = process.env.NEXT_PUBLIC_TESTNET_OFFERS
-    rpcProvider = new ethers.providers.JsonRpcProvider(process.env.NEXT_PUBLIC_RPC_PROD)
+    rpcProvider = new ethers.providers.AlchemyProvider('maticmum', process.env.NEXT_PUBLIC_ALCHEMY_MUMBAI_KEY)
 }
 else if (process.env.NEXT_PUBLIC_APP_ENV === 'development') {
     tappAddress = process.env.NEXT_PUBLIC_LOCAL_TAPP
@@ -37,25 +37,31 @@ else if (process.env.NEXT_PUBLIC_APP_ENV === 'development') {
     offersAddress = process.env.NEXT_PUBLIC_LOCAL_OFFERS
 }
 
-export const getTappContract = (signer) => {
-    return new ethers.Contract(tappAddress, TappJSON.abi, rpcProvider)
-}
-export const getUserContract = (signer) => {
-    return new ethers.Contract(userAddress, UserJSON.abi, rpcProvider)
-}
-export const getCollectionsContract = (signer) => {
-    return new ethers.Contract(collectionsAddres, CollectionsJSON.abi, rpcProvider)
-}
-export const getERC721Contract = (address, signer) => {
-    return new ethers.Contract(address, ERC721JSON.abi, rpcProvider)
-}
+export const TappContract = new ethers.Contract(tappAddress, TappJSON.abi, rpcProvider)
+export const UserContract = new ethers.Contract(userAddress, UserJSON.abi, rpcProvider)
+export const CollectionsContract = new ethers.Contract(collectionsAddres, CollectionsJSON.abi, rpcProvider)
+export const MarketplaceContract = new ethers.Contract(marketplaceAddress, MarketplaceJSON.abi, rpcProvider)
+export const AuctionsContract = new ethers.Contract(auctionsAddress, AuctionsJSON.abi, rpcProvider)
+export const OffersContract = new ethers.Contract(offersAddress, OffersJSON.abi, rpcProvider)
 
-export const getMarketplaceContract = (signer) => {
-    return new ethers.Contract(marketplaceAddress, MarketplaceJSON.abi, rpcProvider)
-}
-export const getAuctionsContract = (signer) => {
-    return new ethers.Contract(auctionsAddress, AuctionsJSON.abi, rpcProvider)
-}
-export const getOffersContract = (signer) => {
-    return new ethers.Contract(offersAddress, OffersJSON.abi, rpcProvider)
+export const SignerContracts = (function () {
+
+    let signer;
+    return {
+        setSigner: (_signer) => {
+            signer = _signer;
+        },
+        tappContract: () => new ethers.Contract(tappAddress, TappJSON.abi, signer),
+        userContract: () => new ethers.Contract(userAddress, UserJSON.abi, signer),
+        collectionsContract: () => new ethers.Contract(collectionsAddres, CollectionsJSON.abi, signer),
+        marketplaceContract: () => new ethers.Contract(marketplaceAddress, MarketplaceJSON.abi, signer),
+        auctionsContract: () => new ethers.Contract(auctionsAddress, AuctionsJSON.abi, signer),
+        offersContract: () => new ethers.Contract(offersAddress, OffersJSON.abi, signer),
+        erc721Contract: (address) => new ethers.Contract(address, ERC721JSON.abi, signer)
+    }
+
+})()
+
+export const getERC721Contract = (address) => {
+    return new ethers.Contract(address, ERC721JSON.abi, rpcProvider)
 }

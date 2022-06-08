@@ -4,6 +4,7 @@ import { ethers } from "ethers"
 import { createContext, useContext, useEffect, useMemo, useState } from "react"
 import Web3Modal from 'web3modal'
 import { addUser, getUserId, getUserProfile } from "../apis/user"
+import { SignerContracts } from "./ethers"
 
 
 
@@ -62,7 +63,7 @@ async function switchNetwork() {
     if (provider) {
         const chainId = ethers.utils.hexValue(getDesiredChainId())
         try {
-            
+
             await provider.request({
                 method: 'wallet_switchEthereumChain',
                 params: [{ chainId }]
@@ -108,13 +109,13 @@ export default ({ children }) => {
 
     const loadAccount = async () => {
         let provider, signer
-        
+
         if (window.ethereum) {
             provider = new ethers.providers.Web3Provider(window.ethereum, 'any')
             window.ethereum.once('accountsChanged', (accounts) => {
                 loadAccount()
             })
-            window.ethereum.once('chainChanged', function (chainId) {         
+            window.ethereum.once('chainChanged', function (chainId) {
                 const desiredChainId = getDesiredChainId()
                 if (chainId !== desiredChainId) {
                     switchNetwork()
@@ -137,7 +138,7 @@ export default ({ children }) => {
             provider = new ethers.providers.Web3Provider(proxy)
         }
 
-        
+
         signer = provider.getSigner()
 
         try {
@@ -149,16 +150,25 @@ export default ({ children }) => {
                 return switchNetwork()
             }
 
+            SignerContracts.setSigner(signer)
+
             let profile = await getUserProfile(address, signer);
 
             if (profile?.id && profile.id.toString() === "0") {
+                console.log("Adding User")
                 const tx = await addUser(address, signer)
                 await tx.wait(1)
                 profile = await getUserProfile(address, signer);
             }
 
+            
+            if (!provider) {
+                provider = new ethers.providers.AlchemyProvider('maticmum', process.env.NEXT_PUBLIC_ALCHEMY_MUMBAI_KEY)
+            }
+            console.log("Context Provider:", provider)
             setContext({ provider, signer, address, profile })
             setContextLoading(false)
+
             return { provider, signer, address, profile }
         } catch (err) {
             setContextLoading(false)

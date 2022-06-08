@@ -106,9 +106,9 @@ export default function NFTItem({ nft, collectionAddress, onMint }) {
             setMarketItem(item)
         }
         if (nft.auctionId.toString() !== "0") {
+            if (!provider) return
             const item = await getAuction(nft.auctionId.toString(), signer)
             const p = await getUserProfile(item.seller, signer)
-
             const currentBlock = await provider.getBlockNumber()
             const endBlock = Number(item.endBlock.toString())
 
@@ -243,12 +243,12 @@ export default function NFTItem({ nft, collectionAddress, onMint }) {
         }
         setIsApproveContractModalOpen(false)
     }
-    const handleCreateOffer = () => {
+    const connectionMiddleware = (callback) => {
         if (!address && !loading) {
             return setOpenConnectModal(true)
         }
-        
-        setIsCreateOfferModalOpen(true)
+
+        callback()
     }
     const ApproveContract = () => {
         return <MintingPaper>
@@ -268,7 +268,7 @@ export default function NFTItem({ nft, collectionAddress, onMint }) {
                     </LoadingButton>
                 }
                 else {
-                    return <LoadingButton loading={isButtonLoading} onClick={buyNFT} variant="contained" size="small" sx={{ width: '100%' }}>
+                    return <LoadingButton loading={isButtonLoading} onClick={() => connectionMiddleware(buyNFT)} variant="contained" size="small" sx={{ width: '100%' }}>
                         Buy
                     </LoadingButton>
                 }
@@ -286,7 +286,7 @@ export default function NFTItem({ nft, collectionAddress, onMint }) {
                 }
                 else {
                     return <>
-                        <LoadingButton disabled={isAuctionExpired} loading={isButtonLoading} onClick={() => setIsBiddingModalOpen(true)} variant="contained" size="small" sx={{ width: '100%' }}>
+                        <LoadingButton disabled={isAuctionExpired} loading={isButtonLoading} onClick={() => connectionMiddleware(() => setIsBiddingModalOpen(true))} variant="contained" size="small" sx={{ width: '100%' }}>
                             Place Bid
                         </LoadingButton>
                         <IconButton size="small" onClick={() => setIsAuctionDetailsModalOpen(true)}>
@@ -297,22 +297,22 @@ export default function NFTItem({ nft, collectionAddress, onMint }) {
             } else {
                 if (nft.owner == address) {
                     return <>
-                        <Button variant="contained" onClick={handleSell} size="small" sx={{ width: '100%' }}>
+                        <Button variant="contained" onClick={() => connectionMiddleware(handleSell)} size="small" sx={{ width: '100%' }}>
                             Sell
                         </Button>
-                        {nft.offers.length > 0 && <IconButton size="small" onClick={() => setIsOffersDetailModalOpen(true)}>
+                        {nft.offers.length > 0 && <IconButton size="small" onClick={() => connectionMiddleware(() => setIsOffersDetailModalOpen(true))}>
                             <InfoOutlined fontSize="small" />
                         </IconButton>}
                     </>
                 }
                 else {
-                    return <Button onClick={handleCreateOffer} variant="contained" size="small" sx={{ width: '100%' }}>
+                    return <Button onClick={() => connectionMiddleware(() => setIsCreateOfferModalOpen(true))} variant="contained" size="small" sx={{ width: '100%' }}>
                         Create Offer
                     </Button>
                 }
             }
         } else if (!nft.minted && !nft.owner) {
-            return <LoadingButton loading={isButtonLoading} variant="contained" size="small" onClick={mintLazy} sx={{ width: '100%' }}>
+            return <LoadingButton loading={isButtonLoading} variant="contained" size="small" onClick={() => connectionMiddleware(mintLazy)} sx={{ width: '100%' }}>
                 Mint
             </LoadingButton>
         }
