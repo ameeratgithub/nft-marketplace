@@ -16,7 +16,7 @@ export default function Index ({ children }) {
         showConnectionMessage()
     }, [])
     useEffect(() => {
-        if (_profile.userAddress) {
+        if (_profile?.userAddress) {
             setProfile(_profile)
         }
     }, [_profile])

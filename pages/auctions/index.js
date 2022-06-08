@@ -36,7 +36,7 @@ export default function Index() {
         await loadAuctionsData()
     }
     return <Layout>
-        {currentLoading || loading ? <CircularProgress color="secondary" /> : <>
+        {currentLoading || loading ? <CircularProgress sx={{position:'relative', left:'45%'}} color="secondary" /> : <>
             <Grid container direction="row" spacing={3} sx={{ mt: '1px' }} justifyContent="space-between">
                 <Grid item><Typography variant="h5">Auctions</Typography></Grid>
                 <Grid item >

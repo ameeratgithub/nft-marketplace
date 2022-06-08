@@ -10,7 +10,6 @@ xdescribe("TAPP", function () {
     tapp = await TAPP.deploy();
     await tapp.deployed();
 
-    console.log(`Tapp deployed at ${tapp.address}`);
   });
   it("Should mint some tokens", async function () {
     const mintingAmount = ethers.utils.parseEther("2000");

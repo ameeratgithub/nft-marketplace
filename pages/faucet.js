@@ -30,7 +30,7 @@ export default function Faucet({ }) {
         }
         
         if (Number(amount) > limit || Number(amount) <= 0) return
-        console.log("Amount:", amount, ", limit:", limit)
+        
         setButtonLoading(true)
         try {
             const tx = await mint(_w(amount), signer)

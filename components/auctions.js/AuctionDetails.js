@@ -24,7 +24,6 @@ export default function Auction({ auctionItem, onImageError, onSuccess }) {
 
     const [isLoading, setIsLoading] = useState(false)
 
-
     const showAlert = (message, type) => {
         setIsSnackbarOpen(true)
         setAlert({ message, type })
@@ -34,7 +33,9 @@ export default function Auction({ auctionItem, onImageError, onSuccess }) {
     }
 
     useEffect(() => {
+
         intialize()
+
     }, [auctionItem])
 
     const intialize = async () => {
@@ -59,8 +60,13 @@ export default function Auction({ auctionItem, onImageError, onSuccess }) {
         const profiles = await Promise.all(profilePromises)
         setBidders(profiles)
 
-        const _participated = await hasParticipated(auctionItem.id, signer)
-        setParticipated(_participated)
+        if (!address) {
+            setParticipated(false)
+        } else {
+            const _participated = await hasParticipated(auctionItem.id, signer)
+            setParticipated(_participated)
+        }
+        
     }
     const endTheAuction = async () => {
         setIsLoading(true)
@@ -129,7 +135,7 @@ export default function Auction({ auctionItem, onImageError, onSuccess }) {
         {
             auctionItem.bids.length > 0 ? [...auctionItem.bids].reverse().map((b, i) => {
                 return <Grid container direction="row" alignItems="center" justifyContent="space-between" key={b.id}>
-                    <Grid item sx={{mb:'10px'}}>
+                    <Grid item sx={{ mb: '10px' }}>
                         {bidders[i] && <NFTUserProfile onImageError={onImageError} profile={bidders[i]} />}
                     </Grid>
                     <Grid item>

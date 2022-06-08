@@ -59,7 +59,6 @@ const initializeWeb3Modal = () => {
 
 async function switchNetwork() {
     const provider = window.ethereum
-    console.log('In switch Network')
     if (provider) {
         const chainId = ethers.utils.hexValue(getDesiredChainId())
         try {
@@ -68,11 +67,9 @@ async function switchNetwork() {
                 method: 'wallet_switchEthereumChain',
                 params: [{ chainId }]
             })
-            console.log('Executing Try')
             // window.location.reload()
             // return true
         } catch (error) {
-            console.log("Catching error")
             if (error.code === 4902) {
                 provider.request({
                     method: "wallet_addEthereumChain",
@@ -142,6 +139,10 @@ export default ({ children }) => {
         signer = provider.getSigner()
 
         try {
+            if (!provider) {
+                provider = new ethers.providers.AlchemyProvider('maticmum', process.env.NEXT_PUBLIC_ALCHEMY_MUMBAI_KEY)
+            }
+
             const address = await signer.getAddress()
             const { chainId } = await provider.getNetwork()
 
@@ -155,23 +156,19 @@ export default ({ children }) => {
             let profile = await getUserProfile(address, signer);
 
             if (profile?.id && profile.id.toString() === "0") {
-                console.log("Adding User")
                 const tx = await addUser(address, signer)
                 await tx.wait(1)
                 profile = await getUserProfile(address, signer);
             }
 
-            
-            if (!provider) {
-                provider = new ethers.providers.AlchemyProvider('maticmum', process.env.NEXT_PUBLIC_ALCHEMY_MUMBAI_KEY)
-            }
-            console.log("Context Provider:", provider)
             setContext({ provider, signer, address, profile })
             setContextLoading(false)
 
             return { provider, signer, address, profile }
         } catch (err) {
             setContextLoading(false)
+            provider = new ethers.providers.AlchemyProvider('maticmum', process.env.NEXT_PUBLIC_ALCHEMY_MUMBAI_KEY)
+            setContext({ provider })
             console.log(err)
         }
 

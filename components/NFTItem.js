@@ -107,6 +107,7 @@ export default function NFTItem({ nft, collectionAddress, onMint }) {
         }
         if (nft.auctionId.toString() !== "0") {
             if (!provider) return
+            
             const item = await getAuction(nft.auctionId.toString(), signer)
             const p = await getUserProfile(item.seller, signer)
             const currentBlock = await provider.getBlockNumber()
@@ -273,7 +274,7 @@ export default function NFTItem({ nft, collectionAddress, onMint }) {
                     </LoadingButton>
                 }
             } else if (nft.auctionId.toString() !== "0") {
-
+            
                 if (auctionItem.seller == address) {
                     return <>
                         <LoadingButton disabled={isAuctionExpired} loading={isButtonLoading} onClick={cancelAuctionItem} variant="contained" size="small" sx={{ width: '100%' }}>

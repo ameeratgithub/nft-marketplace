@@ -38,7 +38,7 @@ export default function Index({ }) {
         // await loadMarketplaceData()
     }
     return <Layout>
-        {currentloading || loading ? <CircularProgress color="secondary" /> : <>
+        {currentloading || loading ? <CircularProgress color="secondary" sx={{position:'relative', left:'45%'}}/> : <>
             <Grid container direction="row" spacing={3} sx={{ mt: '1px' }} justifyContent="space-between">
                 <Grid item><Typography variant="h5">Marketplace</Typography></Grid>
                 <Grid item >

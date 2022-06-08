@@ -6,7 +6,7 @@ import { changeCover, changeName, changePicture, getAllTokens, getUserProfileByI
 import { getUserCollections } from "../../apis/collections"
 
 import { ownerOf721, tokensByIds721 } from "../../apis/collection"
-import { Button, Chip, Divider, Grid, IconButton, Menu, MenuItem, Modal, Paper, Stack, Tab, Tabs, TextField, Tooltip, Typography } from "@mui/material"
+import { Button, Chip, CircularProgress, Divider, Grid, IconButton, Menu, MenuItem, Modal, Paper, Stack, Tab, Tabs, TextField, Tooltip, Typography } from "@mui/material"
 import NFTItem from "../../components/NFTItem"
 import { Box, styled } from "@mui/system"
 import { Box as MaterialBox } from "@mui/material"
@@ -112,6 +112,8 @@ export default function Id({ web3StorageKey }) {
     const [myOffers, setMyOffers] = useState([])
     const [myOfferTokens, setMyOfferTokens] = useState([])
 
+    const [currentLoading, setCurrentLoading] = useState(false)
+
     useEffect(() => {
         setTabValue(0)
         loadProfileData()
@@ -155,7 +157,7 @@ export default function Id({ web3StorageKey }) {
         getProfile()
     }
     const getCollections = async () => {
-
+        setCurrentLoading(true)
         const _collections = await getUserCollections(profile.userAddress, signer)
         setCollections(_collections)
     }
@@ -193,6 +195,7 @@ export default function Id({ web3StorageKey }) {
 
         const nfts = await Promise.all(tokenPromises)
 
+        setCurrentLoading(false)
         setTokens(...nfts)
 
     }
@@ -200,7 +203,7 @@ export default function Id({ web3StorageKey }) {
         if (profile.userAddress !== address) {
             return
         }
-        
+
 
         const items = await getMyBidAuctions(signer)
         const _itemsPromise = items.map(i => {
@@ -216,7 +219,7 @@ export default function Id({ web3StorageKey }) {
             const contractTokens = await tokensByIds721(tokenIds, contractAddress, signer)
             nfts = [...nfts, ...contractTokens]
         }
-        
+
         setBidAuctions(_bidAuctions)
         setBidTokens(nfts)
     }
@@ -541,7 +544,7 @@ export default function Id({ web3StorageKey }) {
                     </MaterialBox>
                     <TabPanel value={tabValue} index={0}>
                         <Grid container spacing={12} sx={{ mt: '-40px', mb: '40px' }}>
-                            {tokens?.length > 0 ? tokens?.map(t => <Grid item xs={12} md={4} lg={3} xl={3} key={t.id.toString()}>
+                            {currentLoading || loading ? <Grid item><CircularProgress sx={{ position: 'relative', left: '45%' }} color="secondary" /></Grid> : tokens?.length > 0 ? tokens?.map(t => <Grid item xs={12} md={4} lg={3} xl={3} key={t.id.toString()}>
                                 <NFTItem nft={t} onMint={loadProfileData} />
                             </Grid>) : <Grid item><Typography variant="subtitle1">No Owned NFT Found</Typography></Grid>}
                         </Grid>
@@ -549,7 +552,7 @@ export default function Id({ web3StorageKey }) {
                     <TabPanel value={tabValue} index={1} >
                         <Grid container direction="row" spacing={4} sx={{ mt: '-10px' }}>
                             {
-                                collections?.length > 0 ? collections?.map((c, i) =>
+                                currentLoading || loading ? <Grid item><CircularProgress sx={{ position: 'relative', left: '45%' }} color="secondary" /></Grid> : collections?.length > 0 ? collections?.map((c, i) =>
                                     <Grid key={i} item lg={4} xl={4} md={4} sm={12}>
                                         <CollectionCard collection={c} />
                                     </Grid>

@@ -98,11 +98,9 @@ export default function CreateNFTForm({ web3StorageKey, collectionAddress, onSuc
             const f = new File([JSON.stringify({ name, description, image })],
                 "metadata.json", { type: 'application/json', lastModified: Date.now() })
             const rootCID = await client.put([f], { maxRetries: 2 })
-            console.log("Metadata saved with hash", rootCID);
 
             showAlert({ message: 'Metadata is saved on IPFS. It may take a while to show metadata (image, name)' })
             const uri = `https://${rootCID}.${ipfsGateway}/metadata.json`;
-            console.log("URI for NFT is", uri)
             let tx
             if (mintNow) tx = await mint(uri, collectionAddress, signer)
             else tx = await lazyAdd(uri, _w(price), collectionAddress, signer)

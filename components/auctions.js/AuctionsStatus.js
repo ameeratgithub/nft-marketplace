@@ -74,7 +74,6 @@ export default function AuctionsStatus ({ bidAuctions, onSuccess }){
         {bidAuctions.length > 0 ? bidAuctions.reverse().map((a, i) => {
             const amountToWithdraw = Number(_e(bidderAuctionAmounts[i]?.toString()))
             const myBids = a.bids.filter(b => b.bidder === address)
-            // console.log("Amount To Withdraw", amountToWithdraw)
             const myHighestBidPrice = Number(_e(myBids[myBids.length - 1].price.toString()))
             const highestBidPrice = Number(_e(a.highestBid.price.toString()))
             const endBlock = Number(a.endBlock.toString())

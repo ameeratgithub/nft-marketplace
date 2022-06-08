@@ -80,20 +80,17 @@ async function deployCollections() {
 }
 
 async function addMonumentsToCollection() {
-    // console.log('-----------Adding Monuments to Collection---------------')
     await collections.addCollection(monuments.address)
-    // console.log('-----------Monuments are Added to Collection---------------')
+   
     const banner = 'https://bafybeiavbtndduyxg3sd6nd3wpgnkn5tr2ot2modlajmruhto6adm7qtcu.ipfs.dweb.link/images/6.jpg'
     const description = 'An illusory adventure of impossible architecture and forgiveness'
 
-    // console.log('-----------Updating Collection Details---------------')
     await collections.updateCollectionBanner(1, banner, { gasLimit: 2100000 })
     await collections.updateCollectionDescription(1, description, { gasLimit: 2100000 })
-    // console.log('-----------Collection Details Updated---------------')
+   
 }
 
 async function addMintableItems() {
-    // console.log('-----------Adding Mintable Items---------------')
     const uris = []
     const prices = []
 
@@ -105,7 +102,6 @@ async function addMintableItems() {
     }
 
     await monuments.addLazyTokens(uris, prices)
-    // console.log('-----------Mintable Items are added---------------')
 }
 
 async function main() {

@@ -6,8 +6,7 @@ async function main() {
   const collections = await Collections.deploy();
 
   await collections.deployed();
-
-  console.log("Tapp deployed to:", tapp.address);
+  
 }
 
 main()
