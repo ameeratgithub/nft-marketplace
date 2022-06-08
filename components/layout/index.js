@@ -26,7 +26,7 @@ export default function Index ({ children }) {
         const account = await loadAccount()
     
         if (!account?.address && !isOpen) {
-            setIsOpen(true)
+            // setIsOpen(true)
         }
 
     }

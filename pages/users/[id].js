@@ -113,11 +113,8 @@ export default function Id({ web3StorageKey }) {
     const [myOfferTokens, setMyOfferTokens] = useState([])
 
     useEffect(() => {
-
-        if (address) {
-            setTabValue(0)
-            loadProfileData()
-        }
+        setTabValue(0)
+        loadProfileData()
     }, [address, loading, id, router.query.id])
     const handleTabChange = (event, newValue) => {
         if (profile.userAddress !== address && newValue > 1) {
@@ -160,7 +157,6 @@ export default function Id({ web3StorageKey }) {
     const getCollections = async () => {
 
         const _collections = await getUserCollections(profile.userAddress, signer)
-        console.log("Collections", _collections)
         setCollections(_collections)
     }
     const getProfile = async () => {
@@ -507,7 +503,7 @@ export default function Id({ web3StorageKey }) {
                 }} />
             </div>
         </Modal>
-        {address && <BannerBox >
+        <BannerBox >
             <BannerImage src={profile.cover || process.env.NEXT_PUBLIC_IMAGE_404} />
 
             <Stack alignItems="center" sx={{ mt: "-60px" }}>
@@ -530,7 +526,7 @@ export default function Id({ web3StorageKey }) {
                 </Stack>
                 {SettingMenu}
             </Stack>
-        </BannerBox>}
+        </BannerBox>
         <Layout>
             <Stack sx={{ mt: '350px' }}>
                 <Box>

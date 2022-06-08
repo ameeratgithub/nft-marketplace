@@ -15,7 +15,7 @@ export const useUpdatedDappProvider = () => {
 
 export const DappProvider = ({ children }) => {
     const initialState = {
-        tapp: { balance: '', limit: '' }
+        tapp: { balance: 0, limit: 4000 }
     }
 
     const { signer, address } = useWeb3()

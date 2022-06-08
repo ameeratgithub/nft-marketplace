@@ -24,6 +24,7 @@ import BiddingForm from "./auctions.js/BiddingForm"
 import AuctionDetails from "./auctions.js/AuctionDetails"
 import CreateOfferForm from "./offers/CreateOfferForm"
 import OfferDetails from "./offers/OfferDetails"
+import ConnectWalletModal from "./common/ConnectWalletModal"
 
 
 
@@ -60,7 +61,7 @@ export default function NFTItem({ nft, collectionAddress, onMint }) {
     const [profile, setProfile] = useState({})
     const [sellerProfile, setSellerProfile] = useState({})
     const [isSnackbarOpen, setIsSnackbarOpen] = useState(false)
-    const { signer, address, provider } = useWeb3()
+    const { signer, address, provider, loading } = useWeb3()
     const [alert, setAlert] = useState({})
     const { tapp: { balance } } = useDappProvider()
 
@@ -74,6 +75,8 @@ export default function NFTItem({ nft, collectionAddress, onMint }) {
     const [isCreateOfferModalOpen, setIsCreateOfferModalOpen] = useState(false)
     const [isOffersDetailModalOpen, setIsOffersDetailModalOpen] = useState(false)
 
+    const [openConnectModal, setOpenConnectModal] = useState(false)
+
     const [isButtonLoading, setIsButtonLoading] = useState(false)
     const [isAuctionExpired, setIsAuctionExpired] = useState(false)
 
@@ -81,19 +84,18 @@ export default function NFTItem({ nft, collectionAddress, onMint }) {
 
     useEffect(() => {
         fetchNftMetaData()
-        if (address && nft.owner) {
+        if (nft.owner) {
             fetchUserProfile()
             fetchSellingData()
         }
 
     }, [address, nft.auctionId, nft.marketItemId, nft.offers])
     useEffect(() => {
-        isApprovedByContract()
+        if (address) isApprovedByContract()
     }, [approvedByContract])
 
     const isApprovedByContract = async () => {
         const approved = await approvedAllContracts(address, nft.contractAddress, signer)
-        console.log('Approved', approved)
         setApprovedByContract(approved)
     }
     const fetchSellingData = async () => {
@@ -139,6 +141,9 @@ export default function NFTItem({ nft, collectionAddress, onMint }) {
         await tx.wait(1)
     }
     const mintLazy = async () => {
+        if (!address && !loading) {
+            return setOpenConnectModal(true)
+        }
         if (balance < _e(nft.price)) {
             return showAlert(`You need ${_e(nft.price) - balance} more tapps to mint NFT`, 'warning')
         }
@@ -147,7 +152,7 @@ export default function NFTItem({ nft, collectionAddress, onMint }) {
         if (!nft.contractAddress) return
         try {
             await approveTapps()
-            
+
             const tx = await lazyMint(nft.id, nft.uri, nft.contractAddress, signer)
             await tx.wait(1)
             showAlert(`NFT minted successfully`, 'info')
@@ -238,6 +243,13 @@ export default function NFTItem({ nft, collectionAddress, onMint }) {
         }
         setIsApproveContractModalOpen(false)
     }
+    const handleCreateOffer = () => {
+        if (!address && !loading) {
+            return setOpenConnectModal(true)
+        }
+        
+        setIsCreateOfferModalOpen(true)
+    }
     const ApproveContract = () => {
         return <MintingPaper>
             <Typography variant="h6">Get Approved</Typography>
@@ -294,7 +306,7 @@ export default function NFTItem({ nft, collectionAddress, onMint }) {
                     </>
                 }
                 else {
-                    return <Button onClick={() => setIsCreateOfferModalOpen(true)} variant="contained" size="small" sx={{ width: '100%' }}>
+                    return <Button onClick={handleCreateOffer} variant="contained" size="small" sx={{ width: '100%' }}>
                         Create Offer
                     </Button>
                 }
@@ -309,6 +321,7 @@ export default function NFTItem({ nft, collectionAddress, onMint }) {
 
     const ownerProfile = sellerProfile.id ? sellerProfile : profile;
     return <>
+        <ConnectWalletModal opened={openConnectModal} handleClose={() => setOpenConnectModal(false)} />
         <Modal open={isSaleModalOpen} onClose={() => setIsSaleModalOpen(false)}>
             <div>
                 <CreateSaleForm nft={nft} onSuccess={handleOnSuccess} />

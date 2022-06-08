@@ -19,7 +19,7 @@ const Banner = styled('img')({
     height: 'inherit', width: 'inherit', objectFit: 'cover', zIndex: -10
 })
 
-export default function Collection ({ web3StorageKey }) {
+export default function Collection({ web3StorageKey }) {
     const router = useRouter()
 
     const { signer, address, loading } = useWeb3()
@@ -33,7 +33,7 @@ export default function Collection ({ web3StorageKey }) {
     const [filter, setFilter] = useState('all')
 
     useEffect(() => {
-        if (address) loadTokens()
+        loadTokens()
     }, [address])
 
     const loadTokens = async () => {
@@ -90,7 +90,7 @@ export default function Collection ({ web3StorageKey }) {
     const handleOnSuccess = async () => {
         setOpenMintingModal(false)
         await loadTokens()
-        
+
     }
 
     const CollectionStack = <Stack>
@@ -153,9 +153,9 @@ export default function Collection ({ web3StorageKey }) {
     </Stack>
 
     return <>
-        {address && <BannerBox >
+        <BannerBox >
             <Banner src={collection.bannerUri || process.env.NEXT_PUBLIC_IMAGE_404} />
-        </BannerBox>}
+        </BannerBox>
         <Layout>
             <Modal open={openMintingModal} onClose={() => setOpenMintingModal(false)}>
                 <div>
@@ -163,8 +163,7 @@ export default function Collection ({ web3StorageKey }) {
                 </div>
             </Modal>
             {
-                address ? CollectionStack :
-                    !loading && <ConnectWallet withWrapper={true} />
+                CollectionStack
             }
         </Layout>
     </>

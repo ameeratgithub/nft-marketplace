@@ -9,6 +9,7 @@ import { _e, _w } from "../utils/ethers"
 import { useWeb3 } from "../utils/web3-context"
 import { useDappProvider, useUpdatedDappProvider } from "../utils/providers"
 import { LoadingButton } from "@mui/lab"
+import ConnectWalletModal from "../components/common/ConnectWalletModal"
 
 export default function Faucet({ }) {
     const [amount, setAmount] = useState('1')
@@ -17,14 +18,16 @@ export default function Faucet({ }) {
     const { signer, address, loading } = useWeb3()
     const { tapp: { balance, limit } } = useDappProvider()
     const { loadTappData } = useUpdatedDappProvider()
+    const [openConnectModal, setOpenConnectModal] = useState(false)
 
     useEffect(() => {
-        console.log("Loading:", loading, ", Address:", address)
-        if (address)
-            loadTappData()
-    }, [address,loading])
+        if (address) loadTappData()
+    }, [address, loading])
 
     const _mint = async () => {
+        if (!address && !loading) {
+            return setOpenConnectModal(true)
+        }
         if (Number(amount) > limit || Number(amount) <= 0) return
         setButtonLoading(true)
         try {
@@ -36,8 +39,8 @@ export default function Faucet({ }) {
         loadTappData()
     }
     return <Layout>
-        {!address && !loading && <ConnectWallet withWrapper={true} />}
-        {address && <Container sx={{ display: 'flex', mt: '80px' }}>
+        <ConnectWalletModal opened={openConnectModal} handleClose={() => setOpenConnectModal(false)}></ConnectWalletModal>
+        <Container sx={{ display: 'flex', mt: '80px' }}>
             <Container sx={{ width: '40%' }}>
                 <Typography variant="h5" sx={{ mb: '10px' }}>Current Balance</Typography>
                 <Chip label={` ${balance} Tapps `} sx={{ mb: '10px', fontSize: '15px', fontWeight: 'bold' }} />
@@ -70,7 +73,7 @@ export default function Faucet({ }) {
                 </LoadingButton>
             </Container>
 
-        </Container>}
+        </Container>
     </Layout>
 }
 

@@ -10,11 +10,11 @@ import Link from 'next/link'
 import { getAuctions } from "../../apis/auctions"
 
 export default function Index() {
-    const { signer, address, profile,loading } = useWeb3()
+    const { signer, address, profile, loading } = useWeb3()
     const [tokens, setTokens] = useState({})
 
     useEffect(() => {
-        if (address) loadAuctionsData()
+        loadAuctionsData()
     }, [address])
 
     const loadAuctionsData = async () => {
@@ -34,26 +34,21 @@ export default function Index() {
         await loadAuctionsData()
     }
     return <Layout>
-        {!address && !loading && <ConnectWallet withWrapper={true} />}
+        <Grid container direction="row" spacing={3} sx={{ mt: '1px' }} justifyContent="space-between">
+            <Grid item><Typography variant="h5">Auctions</Typography></Grid>
+            <Grid item >
+                {profile?.id && <Link href={`/users/${profile.id.toString()}`} passHref>
+                    <Button variant="contained" color="success">
+                        Sell Your NFT
+                    </Button>
+                </Link>}
+            </Grid>
+        </Grid>
+        <Grid container direction="row" spacing={12} sx={{ mt: '-30px', mb: '40px' }}>
+            {tokens?.length > 0 ? tokens?.map(t => <Grid item xs={12} md={4} lg={3} xl={3} key={t.id.toString()}>
+                <NFTItem nft={t} onMint={handleCallBack} />
+            </Grid>) : <Grid item><Typography variant="subtitle1">No NFT is on Auction right now</Typography></Grid>}
+        </Grid>
 
-        {
-            address && <>
-                <Grid container direction="row" spacing={3} sx={{ mt: '1px' }} justifyContent="space-between">
-                    <Grid item><Typography variant="h5">Auctions</Typography></Grid>
-                    <Grid item >
-                        {profile?.id && <Link href={`/users/${profile.id.toString()}`} passHref>
-                            <Button variant="contained" color="success">
-                                Sell Your NFT
-                            </Button>
-                        </Link>}
-                    </Grid>
-                </Grid>
-                <Grid container direction="row" spacing={12} sx={{ mt: '-30px', mb: '40px' }}>
-                    {tokens?.length > 0 ? tokens?.map(t => <Grid item xs={12} md={4} lg={3} xl={3} key={t.id.toString()}>
-                        <NFTItem nft={t} onMint={handleCallBack} />
-                    </Grid>) : <Grid item><Typography variant="subtitle1">No NFT is on Auction right now</Typography></Grid>}
-                </Grid>
-            </>
-        }
     </Layout>
 }

@@ -107,16 +107,14 @@ export default ({ children }) => {
     }, [])
 
     const loadAccount = async () => {
-        console.log("Load Account Called")
         let provider, signer
+        
         if (window.ethereum) {
             provider = new ethers.providers.Web3Provider(window.ethereum, 'any')
             window.ethereum.once('accountsChanged', (accounts) => {
-                console.log("On Accounts Changed")
                 loadAccount()
             })
-            window.ethereum.once('chainChanged', function (chainId) {
-                
+            window.ethereum.once('chainChanged', function (chainId) {         
                 const desiredChainId = getDesiredChainId()
                 if (chainId !== desiredChainId) {
                     switchNetwork()
@@ -153,7 +151,7 @@ export default ({ children }) => {
 
             let profile = await getUserProfile(address, signer);
 
-            if (profile.id.toString() === "0") {
+            if (profile?.id && profile.id.toString() === "0") {
                 const tx = await addUser(address, signer)
                 await tx.wait(1)
                 profile = await getUserProfile(address, signer);
